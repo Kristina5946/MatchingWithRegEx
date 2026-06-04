@@ -1,0 +1,10 @@
+{
+    "files.encoding": "utf8bom",
+    "files.autoGuessEncoding": false,
+    "[cpp]": {
+        "files.encoding": "utf8bom"
+    },
+    "[c]": {
+        "files.encoding": "utf8bom"
+    }
+}

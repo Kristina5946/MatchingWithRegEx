@@ -1,0 +1,12 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+
+[*.{cpp,h,hpp,c,cc}]
+charset = utf-8-bom
+
+[*.py]
+charset = utf-8
