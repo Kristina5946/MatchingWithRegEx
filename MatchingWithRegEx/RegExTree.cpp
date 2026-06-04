@@ -363,6 +363,105 @@ std::vector<std::shared_ptr<RegExNode>> createRegExNodesFromTokens(
 
     return nodes;
 }
+
+std::shared_ptr<RegExNode> createRegExTreeFromRegExNodes(
+    std::vector<std::shared_ptr<RegExNode>>& nodes,
+    std::unordered_set<Error>& errorMessages)
+{
+    std::shared_ptr<RegExNode> root = nullptr;
+
+    // 1: Создать пустой стек для хранения указателей на узлы-операнды
+    std::vector<std::shared_ptr<RegExNode>> operandStack;
+
+    // 2: Для каждого текущего узла из входного списка последовательно
+    size_t nodeIndex = 0;
+    bool keepProcessing = errorMessages.empty() && nodeIndex < nodes.size();
+    while (keepProcessing) {
+        std::shared_ptr<RegExNode> current = nodes[nodeIndex];
+
+        // 2.1: Текущий узел — операнд (символ или маска)
+        if (dynamic_cast<CharNode*>(current.get()) != nullptr) {
+            // 2.1.1: Поместить узел в стек операндов
+            operandStack.push_back(current);
+        }
+        // 2.2: Текущий узел — квантификатор (унарная операция)
+        else if (dynamic_cast<QuantifierNode*>(current.get()) != nullptr) {
+            if (!operandStack.empty()) {
+                // 2.2.1: Взять операнд со стека, привязать к квантификатору, вернуть квантификатор в стек
+                std::shared_ptr<RegExNode> operand = operandStack.back();
+                operandStack.pop_back();
+                std::shared_ptr<QuantifierNode> quantNode =
+                    std::dynamic_pointer_cast<QuantifierNode>(current);
+                quantNode->child = operand;
+                operandStack.push_back(quantNode);
+            }
+            else {
+                // 2.2.2: Недостаточно операндов
+                errorMessages.insert(
+                    Error(Error::insufficientOperands, current->startPosInStr));
+            }
+        }
+        // 2.3: Текущий узел — операция (конкатенация или альтернатива)
+        else if (dynamic_cast<ConcatNode*>(current.get()) != nullptr
+            || dynamic_cast<AlternateNode*>(current.get()) != nullptr) {
+            // 2.3.1: Определить арность операции
+            size_t arity = 2;
+            if (auto concatNode = dynamic_cast<ConcatNode*>(current.get())) {
+                if (!concatNode->children.empty()) {
+                    arity = concatNode->children.size();
+                }
+            }
+            else if (auto altNode = dynamic_cast<AlternateNode*>(current.get())) {
+                if (!altNode->children.empty()) {
+                    arity = altNode->children.size();
+                }
+            }
+
+            if (operandStack.size() >= arity) {
+                // 2.3.2: Извлечь операнды со стека в исходном порядке следования
+                std::vector<std::shared_ptr<RegExNode>> operands;
+                size_t takenCount = 0;
+                while (takenCount < arity) {
+                    operands.insert(operands.begin(), operandStack.back());
+                    operandStack.pop_back();
+                    takenCount++;
+                }
+                if (auto concatNode = std::dynamic_pointer_cast<ConcatNode>(current)) {
+                    concatNode->children = operands;
+                    operandStack.push_back(concatNode);
+                }
+                else {
+                    std::shared_ptr<AlternateNode> altNode =
+                        std::dynamic_pointer_cast<AlternateNode>(current);
+                    altNode->children = operands;
+                    operandStack.push_back(altNode);
+                }
+            }
+            else {
+                // 2.3.3: Недостаточно операндов
+                errorMessages.insert(
+                    Error(Error::insufficientOperands, current->startPosInStr));
+            }
+        }
+
+        nodeIndex++;
+        keepProcessing = errorMessages.empty() && nodeIndex < nodes.size();
+    }
+
+    // 3: После обхода в стеке ровно один элемент — корень дерева
+    if (errorMessages.empty() && operandStack.size() == 1) {
+        root = operandStack.back();
+    }
+    // 4: В стеке более одного элемента — избыточные операнды
+    else if (errorMessages.empty() && operandStack.size() > 1) {
+        errorMessages.insert(
+            Error(Error::excessiveOperands, operandStack.back()->startPosInStr));
+        root = nullptr;
+    }
+
+    return root;
+}
+
 std::shared_ptr<RegExNode> buildRegExTreeFromPostfixNotation(
     const std::string& str,
     std::unordered_set<Error>& errorMessages)
