@@ -5,14 +5,6 @@
 #include <utility>
 
 namespace {
-
-    /*!
-     * \brief Проверяет, является ли символ по заданному индексу разделителем.
-     * \param str Анализируемая строка.
-     * \param index Индекс проверяемого символа.
-     * \param delim Строка, содержащая набор разделителей.
-     * \return true, если символ является разделителем, иначе false.
-     */
     bool charIsInDelimiter(const std::string& str, size_t index, const std::string& delim)
     {
         bool found = false;
@@ -25,12 +17,6 @@ namespace {
         }
         return found;
     }
-    /*!
-     * \brief Сдвигает индекс вперед, пропуская идущие подряд разделители.
-     * \param str Анализируемая строка.
-     * \param delim Строка, содержащая набор разделителей.
-     * \param index Ссылка на индекс, который будет обновлен.
-     */
     void advancePastDelimiters(const std::string& str, const std::string& delim, size_t& index)
     {
         bool stillOnDelimiter = index < str.length();
@@ -44,13 +30,6 @@ namespace {
             }
         }
     }
-    /*!
-     * \brief Вычисляет длину текущего токена (до следующего разделителя или конца строки).
-     * \param str Анализируемая строка.
-     * \param delim Строка, содержащая набор разделителей.
-     * \param index Индекс начала токена.
-     * \return Длина токена в символах.
-     */
      size_t measureTokenLength(const std::string& str, const std::string& delim, size_t index)
     {
         size_t length = 0;
@@ -63,10 +42,6 @@ namespace {
         }
         return length;
     }
-
-    /*!
-     * \brief Фабрика узлов дерева (по внутренней спецификации).
-     */
     struct NodeFactory {
         static std::shared_ptr<CharNode> makeCharNode(
             const std::vector<std::pair<char, char>>& ranges,
@@ -117,11 +92,6 @@ namespace {
             return std::make_shared<AlternateNode>(children, pos);
         }
     };
-
-    /*!
-     * \brief Разбирает неотрицательное целое из подстроки [begin, end).
-     * \return true, если подстрока состоит только из цифр и число разобрано.
-     */
     bool parseNonNegativeInteger(
         const std::string& text,
         size_t begin,
@@ -150,20 +120,12 @@ namespace {
         }
         return parsed;
     }
-
-    /*!
-     * \brief Заполняет charRanges для маски «.» (символы с кодами 1–127).
-     */
     std::vector<std::pair<char, char>> buildDotMaskRanges()
     {
         std::vector<std::pair<char, char>> ranges;
         ranges.push_back(std::make_pair((char)1, (char)127));
         return ranges;
     }
-
-    /*!
-     * \brief 2.1: Создание CharNode из escape-токена (\t, \n, \s и экранирование спецсимволов).
-     */
     std::shared_ptr<RegExNode> createCharNodeFromEscapeToken(
         const std::string& token,
         size_t pos,
@@ -203,10 +165,6 @@ namespace {
         }
         return node;
     }
-
-    /*!
-     * \brief 2.4: Разбор интервального квантификатора {n}, {n,m}, {n,}, {,m}.
-     */
     std::shared_ptr<RegExNode> createQuantifierFromIntervalToken(
         const std::string& token,
         size_t pos,
@@ -275,10 +233,6 @@ namespace {
         }
         return node;
     }
-
-    /*!
-     * \brief 2.5: Извлечение арности из токена &, |, &n, |n и создание узла операции.
-     */
     std::shared_ptr<RegExNode> createOperationNodeFromToken(
         const std::string& token,
         size_t pos,
@@ -315,15 +269,7 @@ namespace {
         return node;
     }
 
-
 }
-
-/*!
-* \brief Разбивает входную строку на токены, используя заданные разделители.
-* \param str Входная строка.
-* \param delim Строка с символами-разделителями.
-* \return Вектор пар, где первая часть — текст токена, вторая — позиция его начала в исходной строке.
-*/
 std::vector<std::pair<std::string, size_t>> splitStringIntoTokens(
     const std::string& str,
     const std::string& delim)
@@ -350,10 +296,6 @@ std::vector<std::pair<std::string, size_t>> splitStringIntoTokens(
     return tokens;
 }
 
-
-/*!
- * \brief Создаёт упорядоченный список узлов по токенам ОПЗ (алгоритм createRegExNodesFromTokens).
- */
 std::vector<std::shared_ptr<RegExNode>> createRegExNodesFromTokens(
     const std::vector<std::pair<std::string, size_t>>& tokens,
     std::unordered_set<Error>& errorMessages)
@@ -421,13 +363,6 @@ std::vector<std::shared_ptr<RegExNode>> createRegExNodesFromTokens(
 
     return nodes;
 }
-
-/*!
- * \brief Строит синтаксическое дерево регулярного выражения из обратной польской записи (ОПЗ).
- * \param str Регулярное выражение в формате ОПЗ (токены разделены пробелами).
- * \param errorMessages Множество для записи найденных ошибок парсинга.
- * \return Указатель на корень синтаксического дерева (nullptr при ошибках).
- */
 std::shared_ptr<RegExNode> buildRegExTreeFromPostfixNotation(
     const std::string& str,
     std::unordered_set<Error>& errorMessages)
