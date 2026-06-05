@@ -468,18 +468,32 @@ std::shared_ptr<RegExNode> buildRegExTreeFromPostfixNotation(
 {
     std::shared_ptr<RegExNode> root = nullptr;
 
-    // 1: Разделитель токенов по спецификации проекта — пробел
+    // 1: Разделитель токенов в постфиксной записи — пробел
     const std::string delimiter = " ";
 
-    // 2: Разбиваем строку на токены, сохраняя их позиции для возможных сообщений об ошибках.
+    // 2: Разбить строку на токены (подстрока и позиция начала в исходной строке)
     std::vector<std::pair<std::string, size_t>> tokenPairs = splitStringIntoTokens(str, delimiter);
 
-    // 3: Если токенов нет (строка пуста или состоит только из пробелов) — фиксируем ошибку
+    // 3: Если токенов нет — ошибка emptyTemplate
     if (tokenPairs.empty()) {
         errorMessages.insert(Error(Error::emptyTemplate, 0));
     }
-    
-    // 4: Стек для построения дерева
+
+    // 4: Создать упорядоченный список узлов по токенам
+    std::vector<std::shared_ptr<RegExNode>> nodeList;
+    if (errorMessages.empty()) {
+        nodeList = createRegExNodesFromTokens(tokenPairs, errorMessages);
+    }
+
+    // 5: Собрать дерево из списка узлов, если ошибок пока нет
+    if (errorMessages.empty()) {
+        root = createRegExTreeFromRegExNodes(nodeList, errorMessages);
+    }
+
+    // 6: При любой ошибке корень дерева — нулевой указатель
+    if (!errorMessages.empty()) {
+        root = nullptr;
+    }
 
     return root;
 }
