@@ -121,3 +121,50 @@ std::unordered_set<std::shared_ptr<NFAState>> SimulateNFA(
     // 5: Вернуть множество после символьного шага и eps-замыкания
     return nextStates;
 }
+
+void epsilonClosure(std::unordered_set<ActiveState>& states)
+{
+    // 1: Создать стек и поместить в него начальные ActiveState из states
+    std::vector<ActiveState> stack;
+    for (const ActiveState& activeState : states) {
+        stack.push_back(activeState);
+    }
+
+    // 2: Пока стек не пуст
+    size_t stackIndex = 0;
+    bool stackNotEmpty = stackIndex < stack.size();
+    while (stackNotEmpty) {
+        // 2.1: Извлечь активное состояние из стека
+        ActiveState current = stack[stackIndex];
+        stackIndex++;
+
+        // 2.2: Для каждого исходящего перехода
+        size_t transIndex = 0;
+        while (transIndex < current.state->outgoingTransitions.size()) {
+            std::shared_ptr<Trans> trans = current.state->outgoingTransitions[transIndex];
+
+            // 2.2.1: Если переход пустой (EpsTrans)
+            if (trans->isEpsilon()) {
+                std::shared_ptr<NFAState> target = trans->getTarget();
+                if (target) {
+                    // 2.2.1.2: Проверка уникальности целевого состояния во множестве states
+                    ActiveState probe;
+                    probe.state = target;
+
+                    bool targetAlreadyPresent = states.find(probe) != states.end();
+                    if (!targetAlreadyPresent) {
+                        ActiveState newActive;
+                        newActive.state = target;
+                        newActive.currentMatch = current.currentMatch;
+
+                        states.insert(newActive);
+                        stack.push_back(newActive);
+                    }
+                }
+            }
+            transIndex++;
+        }
+
+        stackNotEmpty = stackIndex < stack.size();
+    }
+}
