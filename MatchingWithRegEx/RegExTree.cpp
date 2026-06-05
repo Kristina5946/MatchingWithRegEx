@@ -497,3 +497,18 @@ std::shared_ptr<RegExNode> buildRegExTreeFromPostfixNotation(
 
     return root;
 }
+
+void CharNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAState> end)
+{
+    // 1: Создать один объект CharTrans с вектором charRanges
+    std::shared_ptr<CharTrans> transition =
+        std::make_shared<CharTrans>(end, start, charRanges);
+
+    // 2: Целевое состояние перехода — end (задано в конструкторе CharTrans)
+
+    // 3: Добавить переход в исходящие переходы состояния start
+    start->outgoingTransitions.push_back(transition);
+
+    // 4: Добавить переход во входящие переходы состояния end
+    end->incomingTransitions.push_back(transition);
+}
