@@ -515,7 +515,7 @@ void CharNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAStat
 
 void ConcatNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAState> end)
 {
-    // 1: Если дочерних узлов нет — ε-переход напрямую из start в end
+    // 1: Если дочерних узлов нет — eps-переход напрямую из start в end
     if (children.empty()) {
         std::shared_ptr<EpsTrans> eps = std::make_shared<EpsTrans>(end, start);
         start->outgoingTransitions.push_back(eps);
@@ -544,7 +544,7 @@ void ConcatNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFASt
 
 void AlternateNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAState> end)
 {
-    // 1: Если дочерних узлов нет — ε-переход напрямую из start в end
+    // 1: Если дочерних узлов нет — eps-переход напрямую из start в end
     if (children.empty()) {
         std::shared_ptr<EpsTrans> eps = std::make_shared<EpsTrans>(end, start);
         start->outgoingTransitions.push_back(eps);
@@ -557,6 +557,74 @@ void AlternateNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NF
             // 2.1: Построить ветвь с общими start и end (параллельные пути)
             children[childIndex]->buildNFA(start, end);
             childIndex++;
+        }
+    }
+}
+
+void QuantifierNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAState> end)
+{
+    std::shared_ptr<NFAState> innerStart;
+    std::shared_ptr<NFAState> innerEnd;
+    std::shared_ptr<NFAState> chainEnd = start;
+
+    // 1: При minOccur == 0 — прямой eps-переход из start в end (пропуск фрагмента)
+    if (minOccur == 0) {
+        std::shared_ptr<EpsTrans> skipEps = std::make_shared<EpsTrans>(end, start);
+        start->outgoingTransitions.push_back(skipEps);
+        end->incomingTransitions.push_back(skipEps);
+    }
+
+    // 2: Цепочка из minOccur обязательных копий автомата дочернего узла
+    int minIndex = 0;
+    while (minIndex < minOccur) {
+        innerStart = chainEnd;
+        std::shared_ptr<NFAState> nextState = std::make_shared<NFAState>();
+        child->buildNFA(chainEnd, nextState);
+        innerEnd = nextState;
+        chainEnd = nextState;
+        minIndex++;
+    }
+
+    // 3: Неограниченное число повторений (maxOccur == -1)
+    if (maxOccur == -1) {
+        // 3.1: Определить тело цикла (innerStart, innerEnd)
+        if (minOccur == 0) {
+            innerStart = std::make_shared<NFAState>();
+            innerEnd = std::make_shared<NFAState>();
+            child->buildNFA(innerStart, innerEnd);
+        }
+
+        // 3.2: Только при minOccur == 0 — eps из start в начало тела цикла
+        if (minOccur == 0) {
+            std::shared_ptr<EpsTrans> enterEps = std::make_shared<EpsTrans>(innerStart, start);
+            start->outgoingTransitions.push_back(enterEps);
+            innerStart->incomingTransitions.push_back(enterEps);
+        }
+
+        // 3.3: Обратный eps-переход из конца тела цикла в его начало
+        std::shared_ptr<EpsTrans> loopEps = std::make_shared<EpsTrans>(innerStart, innerEnd);
+        innerEnd->outgoingTransitions.push_back(loopEps);
+        innerStart->incomingTransitions.push_back(loopEps);
+
+        // 3.4: eps из конца тела цикла в общее конечное состояние end
+        std::shared_ptr<EpsTrans> exitEps = std::make_shared<EpsTrans>(end, innerEnd);
+        innerEnd->outgoingTransitions.push_back(exitEps);
+        end->incomingTransitions.push_back(exitEps);
+    }
+
+    // 4: Ограниченный диапазон — необязательные копии (maxOccur > minOccur)
+    if (maxOccur > minOccur) {
+        std::shared_ptr<NFAState> optionalStart = chainEnd;
+        int optionalCount = maxOccur - minOccur;
+        int optIndex = 0;
+        while (optIndex < optionalCount) {
+            std::shared_ptr<NFAState> nextState = std::make_shared<NFAState>();
+            child->buildNFA(optionalStart, nextState);
+            std::shared_ptr<EpsTrans> earlyExitEps = std::make_shared<EpsTrans>(end, nextState);
+            nextState->outgoingTransitions.push_back(earlyExitEps);
+            end->incomingTransitions.push_back(earlyExitEps);
+            optionalStart = nextState;
+            optIndex++;
         }
     }
 }
