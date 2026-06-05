@@ -541,3 +541,22 @@ void ConcatNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFASt
         }
     }
 }
+
+void AlternateNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAState> end)
+{
+    // 1: Если дочерних узлов нет — ε-переход напрямую из start в end
+    if (children.empty()) {
+        std::shared_ptr<EpsTrans> eps = std::make_shared<EpsTrans>(end, start);
+        start->outgoingTransitions.push_back(eps);
+        end->incomingTransitions.push_back(eps);
+    }
+    else {
+        // 2: Пройти по всем дочерним узлам альтернативы
+        size_t childIndex = 0;
+        while (childIndex < children.size()) {
+            // 2.1: Построить ветвь с общими start и end (параллельные пути)
+            children[childIndex]->buildNFA(start, end);
+            childIndex++;
+        }
+    }
+}
