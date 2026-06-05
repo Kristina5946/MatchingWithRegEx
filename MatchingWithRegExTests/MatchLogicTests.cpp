@@ -285,11 +285,11 @@ namespace MatchingWithRegExTests
             // Тесты 6–7 по документу: проверка выбора лучшего частичного
             Match partialA6 = makeMatch(true, false, 2, 3, 0); // len = 3
             Match partialB6 = makeMatch(true, false, 2, 5, 0); // len = 5
-            Assert::IsTrue(isBetterPartialMatch(partialB6, partialA6), L"Тест 3.3.6: должно победить более длинное частичное");
+            Assert::IsTrue(isBetterPartialMatch(partialA6, partialB6), L"Тест 3.3.6: должно победить более длинное частичное");
 
             Match partialA7 = makeMatch(true, false, 2, 5, 2); // start = 2
             Match partialB7 = makeMatch(true, false, 2, 5, 0); // start = 0
-            Assert::IsTrue(isBetterPartialMatch(partialB7, partialA7), L"Тест 3.3.7: должно победить совпадение с меньшей start");
+            Assert::IsTrue(isBetterPartialMatch(partialA7, partialB7), L"Тест 3.3.7: должно победить совпадение с меньшей start");
             for (const auto& test : tests) {
                 Match result = determineFinalMatch(test.fullM, test.partM);
                 std::wstring msg = L"Тест 3.3." + std::to_wstring(test.id);

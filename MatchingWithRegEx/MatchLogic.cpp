@@ -168,3 +168,27 @@ void epsilonClosure(std::unordered_set<ActiveState>& states)
         stackNotEmpty = stackIndex < stack.size();
     }
 }
+
+bool isBetterPartialMatch(const Match& bestMatch, const Match& potentialMatch)
+{
+    // 1: Меньшее расстояние до терминала — лучше
+    bool result = false;
+    if (potentialMatch.distanceToTerminal < bestMatch.distanceToTerminal) {
+        result = true;
+    }
+    else if (potentialMatch.distanceToTerminal == bestMatch.distanceToTerminal) {
+        // 2: При равном расстоянии — большая длина совпадения лучше
+        size_t bestLength = bestMatch.end - bestMatch.start;
+        size_t potentialLength = potentialMatch.end - potentialMatch.start;
+        if (potentialLength > bestLength) {
+            result = true;
+        }
+        else if (potentialLength == bestLength) {
+            // 3: При равной длине — меньшая start лучше 
+            if (potentialMatch.start < bestMatch.start) {
+                result = true;
+            }
+        }
+    }
+    return result;
+}
