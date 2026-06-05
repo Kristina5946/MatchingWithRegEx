@@ -512,3 +512,32 @@ void CharNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAStat
     // 4: Добавить переход во входящие переходы состояния end
     end->incomingTransitions.push_back(transition);
 }
+
+void ConcatNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<NFAState> end)
+{
+    // 1: Если дочерних узлов нет — ε-переход напрямую из start в end
+    if (children.empty()) {
+        std::shared_ptr<EpsTrans> eps = std::make_shared<EpsTrans>(end, start);
+        start->outgoingTransitions.push_back(eps);
+        end->incomingTransitions.push_back(eps);
+    }
+    else {
+        // 2: Промежуточных состояний на один меньше, чем дочерних узлов
+        std::shared_ptr<NFAState> blockStart = start;
+        size_t childIndex = 0;
+        while (childIndex < children.size()) {
+            std::shared_ptr<NFAState> blockEnd;
+            // 5: Последний ребёнок заканчивается в общем end
+            if (childIndex + 1 == children.size()) {
+                blockEnd = end;
+            }
+            else {
+                blockEnd = std::make_shared<NFAState>();
+            }
+            // 3–4: Построить фрагмент НКА для текущего дочернего узла
+            children[childIndex]->buildNFA(blockStart, blockEnd);
+            blockStart = blockEnd;
+            childIndex++;
+        }
+    }
+}
