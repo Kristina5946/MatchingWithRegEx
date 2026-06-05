@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "MatchLogic.h"
 #include <deque>
+#include <vector>
 
 void calculateDistanceToTerminal(std::shared_ptr<NFAState> endState)
 {
@@ -49,4 +50,74 @@ void calculateDistanceToTerminal(std::shared_ptr<NFAState> endState)
 
         queueNotEmpty = !queue.empty();
     }
+}
+
+std::unordered_set<std::shared_ptr<NFAState>> SimulateNFA(
+    const std::unordered_set<std::shared_ptr<NFAState>>& currentStates, char c)
+{
+    // 1: Создать пустое множество следующих состояний
+    std::unordered_set<std::shared_ptr<NFAState>> nextStates;
+
+    std::string inputChar;
+    inputChar.push_back(c);
+
+    // 2: Для каждого текущего состояния проверить исходящие переходы
+    for (const std::shared_ptr<NFAState>& state : currentStates) {
+        size_t transIndex = 0;
+        while (transIndex < state->outgoingTransitions.size()) {
+            std::shared_ptr<Trans> trans = state->outgoingTransitions[transIndex];
+
+            // 3: Символьный переход применим к c — добавить целевое состояние
+            if (!trans->isEpsilon()) {
+                bool applicable = trans->isApplicable(inputChar, 0);
+                // 3.1: Маска ANY не принимает перенос строки (спецификация маски ".")
+                if (applicable && c == '\n' && trans->isApplicable("a", 0)) {
+                    applicable = false;
+                }
+                if (applicable) {
+                    std::shared_ptr<NFAState> target = trans->getTarget();
+                    if (target) {
+                        nextStates.insert(target);
+                    }
+                }
+            }
+            transIndex++;
+        }
+    }
+
+    // 4: eps-замыкание — стек обхода, добавить состояния по пустым переходам
+    std::vector<std::shared_ptr<NFAState>> stack;
+    for (const std::shared_ptr<NFAState>& state : nextStates) {
+        stack.push_back(state);
+    }
+
+    size_t stackIndex = 0;
+    bool stackNotEmpty = stackIndex < stack.size();
+    while (stackNotEmpty) {
+        // 4.1: Извлечь состояние из стека
+        std::shared_ptr<NFAState> current = stack[stackIndex];
+        stackIndex++;
+
+        // 4.2: Для каждого исходящего перехода
+        size_t outIndex = 0;
+        while (outIndex < current->outgoingTransitions.size()) {
+            std::shared_ptr<Trans> trans = current->outgoingTransitions[outIndex];
+            if (trans->isEpsilon()) {
+                std::shared_ptr<NFAState> target = trans->getTarget();
+                if (target) {
+                    // 4.2.1: Если целевого состояния ещё нет — добавить в множество и стек
+                    if (nextStates.find(target) == nextStates.end()) {
+                        nextStates.insert(target);
+                        stack.push_back(target);
+                    }
+                }
+            }
+            outIndex++;
+        }
+
+        stackNotEmpty = stackIndex < stack.size();
+    }
+
+    // 5: Вернуть множество после символьного шага и eps-замыкания
+    return nextStates;
 }
