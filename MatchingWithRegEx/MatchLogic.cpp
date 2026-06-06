@@ -192,3 +192,18 @@ bool isBetterPartialMatch(const Match& bestMatch, const Match& potentialMatch)
     }
     return result;
 }
+
+Match determineFinalMatch(const Match& fullMatch, const Match& bestPartialMatch)
+{
+    Match result;
+
+    // 1: Полное совпадение имеет абсолютный приоритет
+    if (fullMatch.isFullMatch) {
+        result = fullMatch;
+    }
+    else {
+        // 2: Иначе вернуть лучшее частичное совпадение
+        result = bestPartialMatch;
+    }
+    return result;
+}
