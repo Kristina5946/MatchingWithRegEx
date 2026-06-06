@@ -321,3 +321,41 @@ void simulateNFA(const std::string& str, size_t startPos,
         }
     }
 }
+
+Match findMatchAtPosition(const NFA& nfa, const std::string& str, size_t startPos)
+{
+    // 1: Создать currentStates и поместить начальное состояние автомата
+    std::unordered_set<ActiveState> currentStates;
+    Match initialMatch;
+    initialMatch.start = startPos;
+    initialMatch.end = startPos;
+
+    ActiveState startActive;
+    startActive.state = nfa.startState;
+    startActive.currentMatch = initialMatch;
+    currentStates.insert(startActive);
+
+    // 2: eps-замыкание — все состояния, достижимые без чтения символов
+    epsilonClosure(currentStates);
+
+    // 3: Инициализировать fullMatch и bestPartialMatch
+    Match fullMatch;
+    Match bestPartialMatch;
+
+    // 4: Если после eps-замыкания есть финальное состояние — полное совпадение нулевой длины
+    for (const ActiveState& active : currentStates) {
+        if (active.state->isFinal) {
+            fullMatch.start = startPos;
+            fullMatch.end = startPos;
+            fullMatch.isFullMatch = true;
+            fullMatch.isValid = true;
+            fullMatch.distanceToTerminal = 0;
+        }
+    }
+
+    // 5: Симуляция автомата по строке
+    simulateNFA(str, startPos, currentStates, fullMatch, bestPartialMatch);
+
+    // 6: Вернуть итоговое совпадение
+    return determineFinalMatch(fullMatch, bestPartialMatch);
+}
