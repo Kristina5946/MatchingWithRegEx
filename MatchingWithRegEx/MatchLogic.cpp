@@ -207,3 +207,52 @@ Match determineFinalMatch(const Match& fullMatch, const Match& bestPartialMatch)
     }
     return result;
 }
+
+std::unordered_set<ActiveState> computeNextStates(
+    const std::unordered_set<ActiveState>& currentStates,
+    const std::string& str, size_t pos)
+{
+    // 1: Создать пустое множество следующих состояний
+    std::unordered_set<ActiveState> nextStates;
+
+    // 2: Для каждого состояния из currentStates проверить исходящие переходы
+    for (const ActiveState& active : currentStates) {
+        size_t transIndex = 0;
+        while (transIndex < active.state->outgoingTransitions.size()) {
+            std::shared_ptr<Trans> trans = active.state->outgoingTransitions[transIndex];
+
+            // 3: Символьный переход применим к str[pos] — добавить целевое состояние
+            if (!trans->isEpsilon()) {
+                bool applicable = trans->isApplicable(str, pos);
+                // 3.1: Маска "." не принимает перенос строки 
+                if (applicable && pos < str.length() && str[pos] == '\n' && trans->isApplicable("a", 0)) {
+                    applicable = false;
+                }
+                if (applicable) {
+                    std::shared_ptr<NFAState> target = trans->getTarget();
+                    if (target) {
+                        ActiveState probe;
+                        probe.state = target;
+
+                        bool targetAlreadyPresent = nextStates.find(probe) != nextStates.end();
+                        if (!targetAlreadyPresent) {
+                            ActiveState newActive;
+                            newActive.state = target;
+                            newActive.currentMatch = active.currentMatch;
+                            newActive.currentMatch.end = pos + 1;
+
+                            nextStates.insert(newActive);
+                        }
+                    }
+                }
+            }
+            transIndex++;
+        }
+    }
+
+    // 4: eps-замыкание для полученного множества
+    epsilonClosure(nextStates);
+
+    // 5: Вернуть множество после символьного шага и eps-замыкания
+    return nextStates;
+}
