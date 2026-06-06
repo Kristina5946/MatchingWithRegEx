@@ -256,3 +256,68 @@ std::unordered_set<ActiveState> computeNextStates(
     // 5: Вернуть множество после символьного шага и eps-замыкания
     return nextStates;
 }
+
+void simulateNFA(const std::string& str, size_t startPos,
+    std::unordered_set<ActiveState>& currentStates,
+    Match& fullMatch, Match& bestPartialMatch)
+{
+    size_t pos = startPos;
+
+    // 1: Пока фронт не пуст и не достигнут конец строки
+    bool canContinue = !currentStates.empty() && pos < str.length();
+    while (canContinue) {
+        // 1.1: Обновить лучшее частичное совпадение по текущему фронту
+        for (const ActiveState& active : currentStates) {
+            Match potentialPartial;
+            potentialPartial.start = active.currentMatch.start;
+            potentialPartial.end = active.currentMatch.end;
+            potentialPartial.distanceToTerminal = active.state->distanceToTerminal;
+            potentialPartial.isValid = true;
+            potentialPartial.isFullMatch = false;
+
+            if (isBetterPartialMatch(bestPartialMatch, potentialPartial)) {
+                bestPartialMatch = potentialPartial;
+            }
+        }
+
+        // 1.2: Сдвинуть волну на один символ вперёд
+        std::unordered_set<ActiveState> nextStates = computeNextStates(currentStates, str, pos);
+
+        // 1.3: Тупик — дальнейший поиск невозможен
+        if (nextStates.empty()) {
+            canContinue = false;
+        }
+        else {
+            // 1.4: Следующие состояния становятся текущими
+            currentStates = nextStates;
+
+            // 1.5: Если на фронте есть финальное состояние — обновить fullMatch
+            for (const ActiveState& active : currentStates) {
+                if (active.state->isFinal) {
+                    fullMatch.start = active.currentMatch.start;
+                    fullMatch.end = active.currentMatch.end;
+                    fullMatch.isFullMatch = true;
+                    fullMatch.isValid = true;
+                    fullMatch.distanceToTerminal = 0;
+                }
+            }
+
+            pos = pos + 1;
+            canContinue = !currentStates.empty() && pos < str.length();
+        }
+    }
+
+    // 1.1 (финальный фронт): оценить частичное совпадение после последнего шага
+    for (const ActiveState& active : currentStates) {
+        Match potentialPartial;
+        potentialPartial.start = active.currentMatch.start;
+        potentialPartial.end = active.currentMatch.end;
+        potentialPartial.distanceToTerminal = active.state->distanceToTerminal;
+        potentialPartial.isValid = true;
+        potentialPartial.isFullMatch = false;
+
+        if (isBetterPartialMatch(bestPartialMatch, potentialPartial)) {
+            bestPartialMatch = potentialPartial;
+        }
+    }
+}
