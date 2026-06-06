@@ -359,3 +359,59 @@ Match findMatchAtPosition(const NFA& nfa, const std::string& str, size_t startPo
     // 6: Вернуть итоговое совпадение
     return determineFinalMatch(fullMatch, bestPartialMatch);
 }
+
+std::vector<Match> extractAllMatches(const NFA& nfa, const std::string& str)
+{
+    // 1: Итоговый список и лучшее частичное совпадение на всей строке
+    std::vector<Match> finalMatches;
+    Match globalBestPartial;
+
+    // 2: Цикл по каждой позиции строки
+    size_t pos = 0;
+    bool posInRange = pos < str.length();
+    while (posInRange) {
+        // 2.1: Поиск совпадения с текущей позиции
+        Match resultMatch = findMatchAtPosition(nfa, str, pos);
+
+        // 2.2: Полное совпадение
+        if (resultMatch.isValid && resultMatch.isFullMatch) {
+            if (resultMatch.end > resultMatch.start) {
+                // 2.2.1: Добавить в итоговый список
+                finalMatches.push_back(resultMatch);
+                // 2.2.2: Сдвинуть pos за конец совпадения
+                pos = resultMatch.end;
+            }
+            else {
+                // Пустое совпадение — только сдвиг pos (защита от зацикливания)
+                pos = pos + 1;
+            }
+        }
+        else if (resultMatch.isValid && !resultMatch.isFullMatch) {
+            // 2.3: Частичное — обновить globalBestPartial
+            if (isBetterPartialMatch(globalBestPartial, resultMatch)) {
+                globalBestPartial = resultMatch;
+            }
+            pos = pos + 1;
+        }
+        else {
+            pos = pos + 1;
+        }
+
+        posInRange = pos < str.length();
+    }
+
+    // 3: Если есть полные совпадения — вернуть их
+    if (!finalMatches.empty()) {
+        return finalMatches;
+    }
+
+    // 4: Иначе вернуть одно лучшее частичное совпадение
+    if (globalBestPartial.isValid && globalBestPartial.end > globalBestPartial.start) {
+        std::vector<Match> partialResult;
+        partialResult.push_back(globalBestPartial);
+        return partialResult;
+    }
+
+    // 5: Совпадений нет
+    return finalMatches;
+}
