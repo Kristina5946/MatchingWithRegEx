@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file RegExTreeTests.cpp
  * \brief Модульные тесты для проверки лексического и синтаксического анализа (построения AST дерева).
  */
@@ -86,7 +86,7 @@ namespace MatchingWithRegExTests
     /*!
      * \brief Конвертация строки в std::wstring для вывода в Assert.
      */
-    std::wstring ToWStr(const std::string& str) {
+    inline std::wstring ToWStr(const std::string& str) {
         return std::wstring(str.begin(), str.end());
     }
 

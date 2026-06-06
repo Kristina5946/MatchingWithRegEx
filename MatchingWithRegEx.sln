@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35707.178 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatchingWithRegEx", "MatchingWithRegEx\MatchingWithRegEx.vcxproj", "{E523AEE7-4EAC-42DD-9984-E091C858E54A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatchingWithRegExApp", "MatchingWithRegExApp\MatchingWithRegExApp.vcxproj", "{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatchingWithRegExTests", "MatchingWithRegExTests\MatchingWithRegExTests.vcxproj", "{A6DF4EF8-3F8F-4BF6-9064-BBBFECB255EC}"
 EndProject
 Global
@@ -23,6 +25,14 @@ Global
 		{E523AEE7-4EAC-42DD-9984-E091C858E54A}.Release|x64.Build.0 = Release|x64
 		{E523AEE7-4EAC-42DD-9984-E091C858E54A}.Release|x86.ActiveCfg = Release|Win32
 		{E523AEE7-4EAC-42DD-9984-E091C858E54A}.Release|x86.Build.0 = Release|Win32
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.ActiveCfg = Debug|x64
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.Build.0 = Debug|x64
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x86.ActiveCfg = Debug|Win32
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x86.Build.0 = Debug|Win32
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.ActiveCfg = Release|x64
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.Build.0 = Release|x64
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x86.ActiveCfg = Release|Win32
+		{B1A2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x86.Build.0 = Release|Win32
 		{A6DF4EF8-3F8F-4BF6-9064-BBBFECB255EC}.Debug|x64.ActiveCfg = Debug|x64
 		{A6DF4EF8-3F8F-4BF6-9064-BBBFECB255EC}.Debug|x64.Build.0 = Debug|x64
 		{A6DF4EF8-3F8F-4BF6-9064-BBBFECB255EC}.Debug|x86.ActiveCfg = Debug|Win32

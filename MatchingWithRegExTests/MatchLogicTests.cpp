@@ -20,7 +20,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace MatchingWithRegExTests
 {
     // 1. Вспомогательная функция для конвертации string в wstring 
-    std::wstring ToWStr(const std::string& str) {
+    inline std::wstring ToWStr(const std::string& str) {
         return std::wstring(str.begin(), str.end());
     }
 
