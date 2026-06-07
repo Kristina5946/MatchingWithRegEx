@@ -1,4 +1,9 @@
-﻿#include "pch.h"
+﻿/*!
+ * \file MatchLogic.cpp
+ * \brief Реализация поиска совпадений, ε-замыкания и симуляции НКА.
+ */
+
+#include "pch.h"
 #include "MatchLogic.h"
 #include <deque>
 #include <vector>

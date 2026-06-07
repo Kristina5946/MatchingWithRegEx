@@ -1,4 +1,9 @@
-﻿#include "pch.h"
+﻿/*!
+ * \file RegExTree.cpp
+ * \brief Реализация разбора ОПЗ, построения AST и генерации фрагментов НКА.
+ */
+
+#include "pch.h"
 #include "RegExTree.h"
 #include <string>
 #include <vector>

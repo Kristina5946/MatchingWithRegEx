@@ -1,4 +1,9 @@
-﻿#include "pch.h"
+﻿/*!
+ * \file NFA.cpp
+ * \brief Реализация символьных переходов НКА.
+ */
+
+#include "pch.h"
 #include "NFA.h"
 
 bool CharTrans::isApplicable(const std::string& str, size_t pos) const

@@ -1,6 +1,10 @@
-﻿#include "pch.h"
-#include "MatchLogic.h"
-#include "Error.h"
+﻿/*!
+ * \file HtmlReport.cpp
+ * \brief Реализация формирования HTML-отчёта.
+ */
+
+#include "pch.h"
+#include "HtmlReport.h"
 #include <fstream>
 #include <string>
 

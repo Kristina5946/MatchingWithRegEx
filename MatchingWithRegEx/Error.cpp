@@ -1,7 +1,15 @@
-﻿#include "pch.h"
+﻿/*!
+ * \file Error.cpp
+ * \brief Реализация вывода текстовых сообщений об ошибках.
+ */
+
+#include "pch.h"
 #include "Error.h"
 #include <iostream>
 
+/*!
+ * \brief Выводит текстовое описание ошибки в стандартный поток вывода.
+ */
 void Error::message() const
 {
     if (type == Error::emptyTemplate) {

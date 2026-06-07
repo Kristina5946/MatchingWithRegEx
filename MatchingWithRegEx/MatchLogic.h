@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file MatchLogic.h
  * \brief Заголовочный файл, описывающий структуры данных и логику поиска совпадений в строке (НКА).
  */
@@ -6,7 +6,6 @@
 #pragma once
 
 #include "NFA.h"
-#include "Error.h"
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -126,6 +125,7 @@ Match determineFinalMatch(const Match& fullMatch, const Match& bestPartialMatch)
  * \param nfa Объект автомата.
  * \param str Анализируемая входная строка.
  * \return Вектор итоговых совпадений.
+ * \sa generateHtmlReport
  */
 std::vector<Match> extractAllMatches(const NFA& nfa, const std::string& str);
 
@@ -134,17 +134,3 @@ std::vector<Match> extractAllMatches(const NFA& nfa, const std::string& str);
  * \param states Множество активных состояний, которое будет дополнено новыми достижимыми состояниями.
  */
 void epsilonClosure(std::unordered_set<ActiveState>& states);
-
-/*!
- * \brief Генерирует HTML-отчет с цветовой индикацией найденных совпадений и синтаксических ошибок.
- * \param filepath Путь к выходному файлу отчета.
- * \param originalStr Исходная проверяемая строка.
- * \param regexTemplate Исходная строка регулярного выражения (шаблон).
- * \param matches Список отфильтрованных совпадений.
- * \param errors Множество выявленных синтаксических ошибок.
- */
-void generateHtmlReport(const std::string& filepath,
-    const std::string& originalStr,
-    const std::string& regexTemplate,
-    const std::vector<Match>& matches,
-    const std::unordered_set<Error>& errors);
