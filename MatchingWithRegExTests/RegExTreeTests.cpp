@@ -146,7 +146,7 @@ namespace MatchingWithRegExTests
                 {42, "Большие числа", "a {100,200}", TreeExpected::Quant(100, 200, TreeExpected::Char1('a')), {}},
                 {43, "Интервал над маской", ". {2,5}", TreeExpected::Quant(2, 5, TreeExpected::CharAny()), {}},
                 {44, "Квантификатор над квантификатором", "a {1,2} {3,4}", TreeExpected::Quant(3, 4, TreeExpected::Quant(1, 2, TreeExpected::Char1('a'))), {}},
-                {45, "Поиск email", "a . * @ b . c &5", TreeExpected::ConcatN(std::vector<std::shared_ptr<RegExNode>>{ TreeExpected::Char1('a'), TreeExpected::Quant(0, -1, TreeExpected::CharAny()), TreeExpected::Char1('@'), TreeExpected::Char1('b'), TreeExpected::CharAny(), TreeExpected::Char1('c') }), {}},
+                {45, "Поиск email", "a . * @ b . c &6", TreeExpected::ConcatN(std::vector<std::shared_ptr<RegExNode>>{ TreeExpected::Char1('a'), TreeExpected::Quant(0, -1, TreeExpected::CharAny()), TreeExpected::Char1('@'), TreeExpected::Char1('b'), TreeExpected::CharAny(), TreeExpected::Char1('c') }), {}},
                 {46, "Недостаточно операндов &", "a &", nullptr, { {Error::insufficientOperands, 2} }},
                 {47, "Недостаточно операндов |", "a |", nullptr, { {Error::insufficientOperands, 2} }},
                 {48, "Недостаточно операндов N-арная", "a b &3", nullptr, { {Error::insufficientOperands, 4} }},
