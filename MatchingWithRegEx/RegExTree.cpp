@@ -575,13 +575,39 @@ void QuantifierNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<N
     }
 
     // 2: Цепочка из minOccur обязательных копий автомата дочернего узла
+    std::shared_ptr<NFAState> repeatStart;
     int minIndex = 0;
     while (minIndex < minOccur) {
         innerStart = chainEnd;
-        std::shared_ptr<NFAState> nextState = std::make_shared<NFAState>();
-        child->buildNFA(chainEnd, nextState);
-        innerEnd = nextState;
-        chainEnd = nextState;
+
+        ConcatNode* concatChild = dynamic_cast<ConcatNode*>(child.get());
+        bool builtConcatParts = false;
+        if (concatChild != nullptr && concatChild->children.size() > 2
+            && maxOccur == -1 && minOccur > 0) {
+            std::shared_ptr<NFAState> afterFirst = std::make_shared<NFAState>();
+            concatChild->children[0]->buildNFA(chainEnd, afterFirst);
+            repeatStart = afterFirst;
+
+            std::shared_ptr<NFAState> linkStart = afterFirst;
+            size_t childIndex = 1;
+            while (childIndex < concatChild->children.size()) {
+                std::shared_ptr<NFAState> linkEnd = std::make_shared<NFAState>();
+                concatChild->children[childIndex]->buildNFA(linkStart, linkEnd);
+                linkStart = linkEnd;
+                childIndex++;
+            }
+            innerEnd = linkStart;
+            chainEnd = linkStart;
+            builtConcatParts = true;
+        }
+
+        if (!builtConcatParts) {
+            std::shared_ptr<NFAState> nextState = std::make_shared<NFAState>();
+            child->buildNFA(chainEnd, nextState);
+            innerEnd = nextState;
+            chainEnd = nextState;
+        }
+
         minIndex++;
     }
 
@@ -609,9 +635,13 @@ void QuantifierNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<N
         }
 
         // 3.3: Обратный eps-переход из конца тела цикла в его начало
-        std::shared_ptr<EpsTrans> loopEps = std::make_shared<EpsTrans>(innerStart, innerEnd);
+        std::shared_ptr<NFAState> loopTarget = innerStart;
+        if (minOccur > 0 && repeatStart != nullptr) {
+            loopTarget = repeatStart;
+        }
+        std::shared_ptr<EpsTrans> loopEps = std::make_shared<EpsTrans>(loopTarget, innerEnd);
         innerEnd->outgoingTransitions.push_back(loopEps);
-        innerStart->incomingTransitions.push_back(loopEps);
+        loopTarget->incomingTransitions.push_back(loopEps);
 
         // 3.4: eps из конца тела цикла в общее конечное состояние end
         std::shared_ptr<EpsTrans> exitEps = std::make_shared<EpsTrans>(end, innerEnd);
