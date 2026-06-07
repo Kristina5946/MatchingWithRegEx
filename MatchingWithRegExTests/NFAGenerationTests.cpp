@@ -614,18 +614,23 @@ namespace MatchingWithRegExTests
                 { 45, "Пустой эпсилон-цикл", "a {0} *", NFAExpected::NestedEmptyStar(), false }
             };
 
+            std::vector<std::string> allErrors;
+
             for (const auto& test : tests) {
                 std::unordered_set<Error> errs;
                 auto tree = buildRegExTreeFromPostfixNotation(test.inputOPZ, errs);
 
                 if (test.expectException) {
-                    Assert::IsTrue(errs.size() > 0 || tree == nullptr,
-                        (L"Тест " + std::to_wstring(test.id) + L": Ожидалась ошибка лимита памяти или неверных параметров!").c_str());
+                    if (errs.size() == 0 && tree != nullptr) {
+                        allErrors.push_back("Тест " + std::to_string(test.id) + ": Ожидалась ошибка лимита памяти или неверных параметров!");
+                    }
                     continue;
                 }
 
-                Assert::IsNotNull(tree.get(),
-                    (L"Тест " + std::to_wstring(test.id) + L": Дерево не построилось (вернулся nullptr)").c_str());
+                if (tree.get() == nullptr) {
+                    allErrors.push_back("Тест " + std::to_string(test.id) + ": Дерево не построилось (вернулся nullptr)");
+                    continue;
+                }
 
                 auto startState = std::make_shared<NFAState>();
                 auto endState = std::make_shared<NFAState>();
@@ -638,25 +643,20 @@ namespace MatchingWithRegExTests
                 std::vector<std::string> equivalenceErrors;
                 TestHelpers::areNFAsEquivalent(test.expectedNFA, actualNFA, equivalenceErrors);
                 if (!equivalenceErrors.empty()) {
-                    std::wstring msg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Автоматы не эквивалентны!\n";
-                    for (const std::string& err : equivalenceErrors) {
-                        msg += TestHelpers::ToWStr(err) + L"\n";
-                    }
-                    Assert::Fail(msg.c_str());
+                    allErrors.push_back("Тест " + std::to_string(test.id) + " [" + test.testName + "]: Автоматы не эквивалентны!");
+                    TestHelpers::appendErrors(allErrors, equivalenceErrors);
+                    continue;
                 }
 
-                // ? Чтобы доказать, что построенный buildNFA граф связный и позволяет алгоритму дистанций дойти от конца до начала...
                 calculateDistanceToTerminal(endState);
 
                 std::vector<std::string> distanceErrors;
                 TestHelpers::assertAllReachableNodesHaveDistance(startState.get(), distanceErrors);
-                if (!distanceErrors.empty()) {
-                    std::wstring distMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: ";
-                    for (const std::string& err : distanceErrors) {
-                        distMsg += TestHelpers::ToWStr(err) + L"\n";
-                    }
-                    Assert::Fail(distMsg.c_str());
-                }
+                TestHelpers::appendErrors(allErrors, distanceErrors);
+            }
+
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
 
@@ -699,6 +699,8 @@ namespace MatchingWithRegExTests
                 tests[23].expectedStateIndices.push_back(i);
             }
 
+            std::vector<std::string> allErrors;
+
             for (const ClosureTest& test : tests) {
                 std::vector<std::shared_ptr<NFAState>> allStates;
                 std::unordered_set<ActiveState> activeSet;
@@ -717,15 +719,11 @@ namespace MatchingWithRegExTests
                 std::vector<std::string> setErrors;
                 std::string context = "epsilon-closure test " + std::to_string(test.id);
                 TestHelpers::compareSetsTwoWay(expectedIndices, actualIndices, setErrors, context);
+                TestHelpers::appendErrors(allErrors, setErrors);
+            }
 
-                // Если ошибки есть — тест падает и выводит все рассинхроны разом
-                if (!setErrors.empty()) {
-                    std::wstring failMsg = L"Тест " + std::to_wstring(test.id) + L" (" + std::wstring(test.testName.begin(), test.testName.end()) + L"):\n";
-                    for (const std::string& err : setErrors) {
-                        failMsg += std::wstring(err.begin(), err.end()) + L"\n";
-                    }
-                    Assert::Fail(failMsg.c_str());
-                }
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
     };

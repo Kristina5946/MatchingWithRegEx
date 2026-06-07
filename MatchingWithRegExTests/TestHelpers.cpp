@@ -363,4 +363,71 @@ namespace TestHelpers {
         }
     }
 
+    void appendErrors(std::vector<std::string>& allErrors, const std::vector<std::string>& newErrors) {
+        size_t i = 0;
+        while (i < newErrors.size()) {
+            allErrors.push_back(newErrors[i]);
+            i++;
+        }
+    }
+
+    void validateMatchResult(int testId, const std::string& inputString, size_t queryStartPos,
+        bool expectValid, bool expectFullMatch, size_t expectedLength,
+        const Match& actualMatch, std::vector<std::string>& errors)
+    {
+        std::string prefix = "Тест 3.4." + std::to_string(testId) + ": ";
+        if (expectValid != actualMatch.isValid) {
+            errors.push_back(prefix + "Ошибка isValid");
+            return;
+        }
+        if (!expectValid) {
+            return;
+        }
+        if (expectFullMatch != actualMatch.isFullMatch) {
+            errors.push_back(prefix + "Ошибка типа (Full/Partial)");
+        }
+        if (queryStartPos != actualMatch.start) {
+            errors.push_back(prefix + "Ошибка позиции начала (start)");
+        }
+        size_t actualLen = actualMatch.end - actualMatch.start;
+        if (expectedLength != actualLen) {
+            errors.push_back(prefix + "Ошибка длины");
+        }
+        if (expectedLength > 0) {
+            std::string expectedText = inputString.substr(queryStartPos, expectedLength);
+            std::string actualText = inputString.substr(actualMatch.start, actualLen);
+            if (expectedText != actualText) {
+                errors.push_back(prefix + "Ошибка текста");
+            }
+        }
+    }
+
+    void validateDetermineFinalMatch(int testId, bool expectValid, bool expectFull, size_t expectLen,
+        const Match& expectedFull, const Match& expectedPartial,
+        const Match& result, std::vector<std::string>& errors)
+    {
+        std::string prefix = "Тест 3.3." + std::to_string(testId) + ": ";
+        if (expectValid != result.isValid) {
+            errors.push_back(prefix + "Ошибка isValid");
+            return;
+        }
+        if (!expectValid) {
+            return;
+        }
+        if (expectFull != result.isFullMatch) {
+            errors.push_back(prefix + "Ошибка типа (Full/Partial)");
+        }
+        const Match& expectedMatch = expectFull ? expectedFull : expectedPartial;
+        if (expectedMatch.start != result.start) {
+            errors.push_back(prefix + "Ошибка позиции начала (start)");
+        }
+        size_t resultLen = result.end - result.start;
+        if (expectLen != resultLen) {
+            errors.push_back(prefix + "Ошибка длины");
+        }
+        if (expectedMatch.distanceToTerminal != result.distanceToTerminal) {
+            errors.push_back(prefix + "Ошибка дистанции");
+        }
+    }
+
 } // namespace TestHelpers

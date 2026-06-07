@@ -113,6 +113,8 @@ namespace MatchingWithRegExTests
                 {9, "a * b & *", {0, 1}, "Цикл внутри цикла ((a*b)*)", false}
             };
 
+            std::vector<std::string> allErrors;
+
             for (const auto& test : tests) {
                 std::shared_ptr<NFAState> startState = std::make_shared<NFAState>();
                 std::shared_ptr<NFAState> endState = std::make_shared<NFAState>();
@@ -126,7 +128,10 @@ namespace MatchingWithRegExTests
                 else {
                     std::unordered_set<Error> errs;
                     auto tree = buildRegExTreeFromPostfixNotation(test.opz, errs);
-                    Assert::IsNotNull(tree.get(), L"Синтаксическое дерево не должно быть null");
+                    if (tree.get() == nullptr) {
+                        allErrors.push_back("Тест 3.1." + std::to_string(test.id) + ": Синтаксическое дерево не должно быть null");
+                        continue;
+                    }
                     tree->buildNFA(startState, endState);
                 }
 
@@ -173,15 +178,11 @@ namespace MatchingWithRegExTests
 
                 // нет ли лишних дистанций или не потерялись ли нужные
                 TestHelpers::compareSetsTwoWay(test.expectedDistances, actualDistances, testErrors, context);
+                TestHelpers::appendErrors(allErrors, testErrors);
+            }
 
-                // 4. Проверка утверждений ассерт
-                if (!testErrors.empty()) {
-                    std::wstring failMsg = L"";
-                    for (const std::string& err : testErrors) {
-                        failMsg += TestHelpers::ToWStr(err) + L"\n";
-                    }
-                    Assert::Fail(failMsg.c_str());
-                }
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
 
@@ -206,6 +207,8 @@ namespace MatchingWithRegExTests
                 {7, 'a', {0}, {1, 2}, "Развилка по одному символу"},
                 {8, 'b', {0, 1}, {2}, "Слияние: два разных в одно"}
             };
+
+            std::vector<std::string> allErrors;
 
             for (const auto& test : tests) {
                 std::vector<std::shared_ptr<NFAState>> states;
@@ -240,18 +243,11 @@ namespace MatchingWithRegExTests
 
                 // Двустороннюю проверку множеств 
                 TestHelpers::compareSetsTwoWay(test.expectedActiveIndices, actualIndices, errors, context);
+                TestHelpers::appendErrors(allErrors, errors);
+            }
 
-                // Интегрированный вывод результатов
-                if (!errors.empty()) {
-                    std::string fullErrorMsg;
-                    for (const auto& err : errors) {
-                        fullErrorMsg += err + "\n";
-                    }
-
-                    // Адаптация std::string в std::wstring для макроса Assert::Fail
-                    std::wstring wMsg(fullErrorMsg.begin(), fullErrorMsg.end());
-                    Assert::Fail(wMsg.c_str());
-                }
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
 
@@ -285,28 +281,17 @@ namespace MatchingWithRegExTests
             Match partialA7 = makeMatch(true, false, 2, 5, 2); // start = 2
             Match partialB7 = makeMatch(true, false, 2, 5, 0); // start = 0
             Assert::IsTrue(isBetterPartialMatch(partialA7, partialB7), L"Тест 3.3.7: должно победить совпадение с меньшей start");
+
+            std::vector<std::string> allErrors;
+
             for (const auto& test : tests) {
                 Match result = determineFinalMatch(test.fullM, test.partM);
-                std::wstring msg = L"Тест 3.3." + std::to_wstring(test.id);
+                TestHelpers::validateDetermineFinalMatch(test.id, test.expectValid, test.expectFull,
+                    test.expectLen, test.fullM, test.partM, result, allErrors);
+            }
 
-                // 1. Совпал ли флаг валидности
-                Assert::AreEqual(test.expectValid, result.isValid, (msg + L": Ошибка isValid").c_str());
-
-                // Если совпадение не ожидалось (NO_MATCH), остальные параметры проверять не нужно
-                if (test.expectValid) {
-
-                    // 2. Полное или частичное
-                    Assert::AreEqual(test.expectFull, result.isFullMatch, (msg + L": Ошибка типа (Full/Partial)").c_str());
-                    // Определяем эталонный Match, с которым будем сравнивать результат
-                    const Match& expectedMatch = test.expectFull ? test.fullM : test.partM;
-                    // 3. Проверка начальной позиции
-                    Assert::AreEqual(expectedMatch.start, result.start, (msg + L": Ошибка позиции начала (start)").c_str());
-                    // 4. Проверка длины
-                    size_t resultLen = result.end - result.start;
-                    Assert::AreEqual(test.expectLen, resultLen, (msg + L": Ошибка длины").c_str());
-                    // 5. проверка дистанции
-                    Assert::AreEqual(expectedMatch.distanceToTerminal, result.distanceToTerminal, (msg + L": Ошибка дистанции").c_str());
-                }
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
 
@@ -368,11 +353,19 @@ namespace MatchingWithRegExTests
                 {45, "OutOfBounds", "c a t &3", "cat\n", 3, PARTIAL, 0}
             };
 
+            std::vector<std::string> allErrors;
+
             for (const auto& test : tests) {
                 std::unordered_set<Error> errs;
                 auto tree = buildRegExTreeFromPostfixNotation(test.regexOPZ, errs);
-                Assert::IsTrue(errs.empty(), (L"Тест " + std::to_wstring(test.id) + L": Ошибка парсинга ОПЗ").c_str());
-                Assert::IsNotNull(tree.get(), (L"Тест " + std::to_wstring(test.id) + L": Дерево пустое").c_str());
+                if (!errs.empty()) {
+                    allErrors.push_back("Тест 3.4." + std::to_string(test.id) + ": Ошибка парсинга ОПЗ");
+                    continue;
+                }
+                if (tree.get() == nullptr) {
+                    allErrors.push_back("Тест 3.4." + std::to_string(test.id) + ": Дерево пустое");
+                    continue;
+                }
 
                 auto startState = std::make_shared<NFAState>();
                 auto endState = std::make_shared<NFAState>();
@@ -384,7 +377,8 @@ namespace MatchingWithRegExTests
                 std::vector<std::string> distanceErrors;
                 TestHelpers::assertAllReachableNodesHaveDistance(startState.get(), distanceErrors);
                 if (!distanceErrors.empty()) {
-                    Assert::Fail((L"Тест 3.4." + std::to_wstring(test.id) + L": невалидные расстояния в автомате").c_str());
+                    allErrors.push_back("Тест 3.4." + std::to_string(test.id) + ": невалидные расстояния в автомате");
+                    continue;
                 }
 
                 NFA nfa = { startState, endState, {} };
@@ -392,35 +386,20 @@ namespace MatchingWithRegExTests
 
                 bool expectValid = (test.expectedMatchType != NO_MATCH);
                 bool expectFull = (test.expectedMatchType == FULL);
-                std::wstring msg = L"Тест 3.4." + std::to_wstring(test.id);
+                TestHelpers::validateMatchResult(test.id, test.inputString, test.startPos,
+                    expectValid, expectFull, test.expectedMatchLength, actualMatch, allErrors);
 
-                // 1. Совпал ли флаг валидности
-                Assert::AreEqual(expectValid, actualMatch.isValid, (msg + L": Ошибка isValid").c_str());
-                if (expectValid) {
-                    // 2. Полное или частичное
-                    Assert::AreEqual(expectFull, actualMatch.isFullMatch, (msg + L": Ошибка типа (Full/Partial)").c_str());
-                    // 3. Проверка позиции
-                    Assert::AreEqual(test.startPos, actualMatch.start, (msg + L": Ошибка позиции начала (start)").c_str());
-                    // 4. Проверка длины
-                    size_t actualLen = actualMatch.end - actualMatch.start;
-                    Assert::AreEqual(test.expectedMatchLength, actualLen, (msg + L": Ошибка длины").c_str());
-                    // 5. совпала ли подстрока
-                    std::string expectedText = test.inputString.substr(test.startPos, test.expectedMatchLength);
-                    std::string actualText = test.inputString.substr(actualMatch.start, actualLen);
-
-                    // Конвертируем string в wstring для корректного вывода Assert::AreEqual
-                    std::wstring wExpected(expectedText.begin(), expectedText.end());
-                    std::wstring wActual(actualText.begin(), actualText.end());
-                    Assert::AreEqual(wExpected, wActual, (msg + L": Ошибка текста").c_str());
-                }
-
-                
                 size_t actualLenLog = actualMatch.isValid ? (actualMatch.end - actualMatch.start) : 0;
                 MatchType actualTypeLog = !actualMatch.isValid ? NO_MATCH : (actualMatch.isFullMatch ? FULL : PARTIAL);
 
+                std::wstring msg = L"Тест 3.4." + std::to_wstring(test.id);
                 std::wstring vis = VisualizeMatchForLog(test.inputString, test.startPos, actualLenLog, actualTypeLog);
                 std::wstring wTestName(test.testName.begin(), test.testName.end());
                 Logger::WriteMessage((msg + L" [" + wTestName + L"] -> " + vis + L"\n").c_str());
+            }
+
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
     };

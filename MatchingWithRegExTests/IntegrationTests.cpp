@@ -65,6 +65,8 @@ namespace MatchingWithRegExTests
                 {21, "ConsecutiveMatch", "a b &", "ababab", "[ab][ab][ab]"}
             };
 
+            std::vector<std::string> allErrors;
+
             for (const auto& test : tests) {
                 // 1. Сборка NFA
                 std::unordered_set<Error> errs;
@@ -83,7 +85,8 @@ namespace MatchingWithRegExTests
                 std::vector<std::string> distanceErrors;
                 TestHelpers::assertAllReachableNodesHaveDistance(startState.get(), distanceErrors);
                 if (!distanceErrors.empty()) {
-                    Assert::Fail((L"Тест " + std::to_wstring(test.id) + L": ошибки дистанций в автомате").c_str());
+                    allErrors.push_back("Тест " + std::to_string(test.id) + ": ошибки дистанций в автомате");
+                    continue;
                 }
 
                 NFA nfa = { startState, endState, {} };
@@ -119,10 +122,14 @@ namespace MatchingWithRegExTests
                 }
 
                 // 4. Проверка
-                std::wstring failMsg = L"Ошибка в тесте " + std::to_wstring(test.id) + L" (" +
-                    std::wstring(test.testName.begin(), test.testName.end()) + L")";
+                if (test.expectedResult != actualResult) {
+                    allErrors.push_back("Ошибка в тесте " + std::to_string(test.id) + " (" + test.testName
+                        + "): ожидалось [" + test.expectedResult + "], получено [" + actualResult + "]");
+                }
+            }
 
-                Assert::AreEqual(test.expectedResult, actualResult, failMsg.c_str());
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         }
     };

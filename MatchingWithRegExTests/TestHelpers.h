@@ -32,6 +32,19 @@ namespace TestHelpers {
         return result;
     }
 
+    inline std::wstring formatErrors(const std::vector<std::string>& errors) {
+        std::wstring msg;
+        size_t i = 0;
+        while (i < errors.size()) {
+            msg += ToWStr(errors[i]);
+            msg += L"\n";
+            i++;
+        }
+        return msg;
+    }
+
+    void appendErrors(std::vector<std::string>& allErrors, const std::vector<std::string>& newErrors);
+
     /*!
      * \brief ??????????? ????????? ?????????? ? ???????????? AST ?? ????? ? ??????.
      */
@@ -68,5 +81,9 @@ namespace TestHelpers {
     void validateMatchResult(int testId, const std::string& inputString, size_t queryStartPos,
         bool expectValid, bool expectFullMatch, size_t expectedLength,
         const Match& actualMatch, std::vector<std::string>& errors);
+
+    void validateDetermineFinalMatch(int testId, bool expectValid, bool expectFull, size_t expectLen,
+        const Match& expectedFull, const Match& expectedPartial,
+        const Match& result, std::vector<std::string>& errors);
 
 } // namespace TestHelpers

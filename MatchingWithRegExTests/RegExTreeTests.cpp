@@ -161,6 +161,8 @@ namespace MatchingWithRegExTests
                 {57, "Несуществующий escape", "\\k", nullptr, { {Error::invalidEscapeSequence, 0} }},
             };
 
+            std::vector<std::string> allErrors;
+
             for (const TreeTest& test : tests)
             {
                 std::unordered_set<Error> actualErrors;
@@ -169,39 +171,41 @@ namespace MatchingWithRegExTests
                 auto actualTree = buildRegExTreeFromPostfixNotation(test.inputOPZ, actualErrors);
 
                 // 1. Проверка количества зафиксированных ошибок парсинга
-                std::wstring countMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Неверное количество синтаксических ошибок.";
-                Assert::AreEqual(test.expectedErrors.size(), actualErrors.size(), countMsg.c_str());
+                if (test.expectedErrors.size() != actualErrors.size()) {
+                    allErrors.push_back("Тест " + std::to_string(test.id) + " [" + test.testName
+                        + "]: Неверное количество синтаксических ошибок.");
+                    continue;
+                }
 
                 // 2. Двусторонняя проверка множества ошибок (нет лишних и нет недостающих)
                 std::vector<std::string> errorSetErrors;
                 std::string errorContext = "Тест " + std::to_string(test.id) + " [" + test.testName + "]";
                 TestHelpers::compareErrorSetsTwoWay(test.expectedErrors, actualErrors, errorSetErrors, errorContext);
                 if (!errorSetErrors.empty()) {
-                    std::wstring errMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Ошибки не совпадают двусторонне.\n";
-                    for (const std::string& err : errorSetErrors) {
-                        errMsg += TestHelpers::ToWStr(err) + L"\n";
-                    }
-                    Assert::Fail(errMsg.c_str());
+                    TestHelpers::appendErrors(allErrors, errorSetErrors);
+                    continue;
                 }
 
                 // 3. Сравнение по объектам в памяти 
                 if (test.expectedTree == nullptr) {
-                    Assert::IsNull(actualTree.get(), (L"Тест " + std::to_wstring(test.id) + L": Дерево должно быть nullptr (ожидалась ошибка синтаксиса)").c_str());
-                }
-                else {
-                    Assert::IsNotNull(actualTree.get(), (L"Тест " + std::to_wstring(test.id) + L": Дерево не построилось (ожидался успех)").c_str());
-
-                    std::vector<std::string> structureErrors;
-                    TestHelpers::compareExpressionTrees(test.expectedTree.get(), actualTree.get(), structureErrors, "root");
-
-                    if (!structureErrors.empty()) {
-                        std::wstring structMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Структура дерева не совпадает с ожидаемой.\nОшибки:\n";
-                        for (const std::string& err : structureErrors) {
-                            structMsg += TestHelpers::ToWStr(err) + L"\n";
-                        }
-                        Assert::Fail(structMsg.c_str());
+                    if (actualTree.get() != nullptr) {
+                        allErrors.push_back("Тест " + std::to_string(test.id) + ": Дерево должно быть nullptr (ожидалась ошибка синтаксиса)");
                     }
                 }
+                else {
+                    if (actualTree.get() == nullptr) {
+                        allErrors.push_back("Тест " + std::to_string(test.id) + ": Дерево не построилось (ожидался успех)");
+                    }
+                    else {
+                        std::vector<std::string> structureErrors;
+                        TestHelpers::compareExpressionTrees(test.expectedTree.get(), actualTree.get(), structureErrors, "root");
+                        TestHelpers::appendErrors(allErrors, structureErrors);
+                    }
+                }
+            }
+
+            if (!allErrors.empty()) {
+                Assert::Fail(TestHelpers::formatErrors(allErrors).c_str());
             }
         };
     };
