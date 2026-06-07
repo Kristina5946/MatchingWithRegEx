@@ -84,13 +84,6 @@ namespace MatchingWithRegExTests
     }
 
     /*!
-     * \brief Конвертация строки в std::wstring для вывода в Assert.
-     */
-    inline std::wstring ToWStr(const std::string& str) {
-        return std::wstring(str.begin(), str.end());
-    }
-
-    /*!
      * \brief Локальная структура для хранения данных тестового случая AST.
      * expectedTree — эталонное дерево в памяти , nullptr если ожидается ошибка.
      */
@@ -116,14 +109,14 @@ namespace MatchingWithRegExTests
                 {5, "Мусор в стеке", "a b c", nullptr, { {Error::excessiveOperands, 4} }},
                 {6, "Символ табуляции", "\t", TreeExpected::Char1('\t'), {}},
                 {7, "Символ переноса строки", "\n", TreeExpected::Char1('\n'), {}},
-                {8, "Экранирование *", "\*", TreeExpected::Char1('*'), {}},
-                {9, "Экранирование +", "\+", TreeExpected::Char1('+'), {}},
-                {10, "Экранирование |", "\|", TreeExpected::Char1('|'), {}},
-                {11, "Экранирование слеша", "\\", TreeExpected::Char1('\\'), {}},
-                {12, "Экранирование скобки", "\{", TreeExpected::Char1('{'), {}},
-                {13, "Экранирование &", "\&", TreeExpected::Char1('&'), {}},
+                {8, "Экранирование *", "\\*", TreeExpected::Char1('*'), {}},
+                {9, "Экранирование +", "\\+", TreeExpected::Char1('+'), {}},
+                {10, "Экранирование |", "\\|", TreeExpected::Char1('|'), {}},
+                {11, "Экранирование слеша", "\\\\", TreeExpected::Char1('\\'), {}},
+                {12, "Экранирование скобки", "\\{", TreeExpected::Char1('{'), {}},
+                {13, "Экранирование &", "\\&", TreeExpected::Char1('&'), {}},
                 {14, "Одиночная маска", ".", TreeExpected::CharAny(), {}},
-                {15, "Экранированная точка", "\.", TreeExpected::Char1('.'), {}},
+                {15, "Экранированная точка", "\\.", TreeExpected::Char1('.'), {}},
                 {16, "Конкатенация с маской", "a . &", TreeExpected::Concat2(TreeExpected::Char1('a'), TreeExpected::CharAny()), {}},
                 {17, "Любое кол-во любых символов", ". *", TreeExpected::Quant(0, -1, TreeExpected::CharAny()), {}},
                 {18, "Простая конкатенация", "a b &", TreeExpected::Concat2(TreeExpected::Char1('a'), TreeExpected::Char1('b')), {}},
@@ -176,7 +169,7 @@ namespace MatchingWithRegExTests
                 auto actualTree = buildRegExTreeFromPostfixNotation(test.inputOPZ, actualErrors);
 
                 // 1. Проверка количества зафиксированных ошибок парсинга
-                std::wstring countMsg = L"Тест " + std::to_wstring(test.id) + L" [" + ToWStr(test.testName) + L"]: Неверное количество синтаксических ошибок.";
+                std::wstring countMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Неверное количество синтаксических ошибок.";
                 Assert::AreEqual(test.expectedErrors.size(), actualErrors.size(), countMsg.c_str());
 
                 // 2. Двусторонняя проверка множества ошибок (нет лишних и нет недостающих)
@@ -184,9 +177,9 @@ namespace MatchingWithRegExTests
                 std::string errorContext = "Тест " + std::to_string(test.id) + " [" + test.testName + "]";
                 TestHelpers::compareErrorSetsTwoWay(test.expectedErrors, actualErrors, errorSetErrors, errorContext);
                 if (!errorSetErrors.empty()) {
-                    std::wstring errMsg = L"Тест " + std::to_wstring(test.id) + L" [" + ToWStr(test.testName) + L"]: Ошибки не совпадают двусторонне.\n";
+                    std::wstring errMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Ошибки не совпадают двусторонне.\n";
                     for (const std::string& err : errorSetErrors) {
-                        errMsg += ToWStr(err) + L"\n";
+                        errMsg += TestHelpers::ToWStr(err) + L"\n";
                     }
                     Assert::Fail(errMsg.c_str());
                 }
@@ -202,9 +195,9 @@ namespace MatchingWithRegExTests
                     TestHelpers::compareExpressionTrees(test.expectedTree.get(), actualTree.get(), structureErrors, "root");
 
                     if (!structureErrors.empty()) {
-                        std::wstring structMsg = L"Тест " + std::to_wstring(test.id) + L" [" + ToWStr(test.testName) + L"]: Структура дерева не совпадает с ожидаемой.\nОшибки:\n";
+                        std::wstring structMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Структура дерева не совпадает с ожидаемой.\nОшибки:\n";
                         for (const std::string& err : structureErrors) {
-                            structMsg += ToWStr(err) + L"\n";
+                            structMsg += TestHelpers::ToWStr(err) + L"\n";
                         }
                         Assert::Fail(structMsg.c_str());
                     }

@@ -19,12 +19,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MatchingWithRegExTests
 {
-    // 1. Вспомогательная функция для конвертации string в wstring 
-    inline std::wstring ToWStr(const std::string& str) {
-        return std::wstring(str.begin(), str.end());
-    }
-
-    // 2. Перечисление типов совпадений 
+    // 1. Перечисление типов совпадений 
     enum MatchType {
         NO_MATCH,
         PARTIAL,
@@ -53,7 +48,7 @@ namespace MatchingWithRegExTests
     }
 
     inline std::wstring VisualizeMatchForLog(const std::string& input, size_t start, size_t len, MatchType type) {
-        std::wstring wInput = ToWStr(input);
+        std::wstring wInput = TestHelpers::ToWStr(input);
         std::wstring res = L"Вход: [" + wInput + L"], Позиция: " + std::to_wstring(start) + L", Длина: " + std::to_wstring(len) + L" -> ";
         if (type == FULL) res += L"FULL";
         else if (type == PARTIAL) res += L"PARTIAL";
@@ -183,7 +178,7 @@ namespace MatchingWithRegExTests
                 if (!testErrors.empty()) {
                     std::wstring failMsg = L"";
                     for (const std::string& err : testErrors) {
-                        failMsg += ToWStr(err) + L"\n";
+                        failMsg += TestHelpers::ToWStr(err) + L"\n";
                     }
                     Assert::Fail(failMsg.c_str());
                 }

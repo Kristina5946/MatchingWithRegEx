@@ -21,10 +21,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MatchingWithRegExTests
 {
-    inline std::wstring ToWStr(const std::string& str) {
-        return std::wstring(str.begin(), str.end());
-    }
-
     /*!
      * \brief Эталонные НКА для табл. 2.1.
      * возвращают готовый объект NFA.
@@ -642,9 +638,9 @@ namespace MatchingWithRegExTests
                 std::vector<std::string> equivalenceErrors;
                 TestHelpers::areNFAsEquivalent(test.expectedNFA, actualNFA, equivalenceErrors);
                 if (!equivalenceErrors.empty()) {
-                    std::wstring msg = L"Тест " + std::to_wstring(test.id) + L" [" + ToWStr(test.testName) + L"]: Автоматы не эквивалентны!\n";
+                    std::wstring msg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: Автоматы не эквивалентны!\n";
                     for (const std::string& err : equivalenceErrors) {
-                        msg += ToWStr(err) + L"\n";
+                        msg += TestHelpers::ToWStr(err) + L"\n";
                     }
                     Assert::Fail(msg.c_str());
                 }
@@ -655,9 +651,9 @@ namespace MatchingWithRegExTests
                 std::vector<std::string> distanceErrors;
                 TestHelpers::assertAllReachableNodesHaveDistance(startState.get(), distanceErrors);
                 if (!distanceErrors.empty()) {
-                    std::wstring distMsg = L"Тест " + std::to_wstring(test.id) + L" [" + ToWStr(test.testName) + L"]: ";
+                    std::wstring distMsg = L"Тест " + std::to_wstring(test.id) + L" [" + TestHelpers::ToWStr(test.testName) + L"]: ";
                     for (const std::string& err : distanceErrors) {
-                        distMsg += ToWStr(err) + L"\n";
+                        distMsg += TestHelpers::ToWStr(err) + L"\n";
                     }
                     Assert::Fail(distMsg.c_str());
                 }
