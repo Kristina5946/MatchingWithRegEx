@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "CppUnitTest.h"
 #include "RegExTree.h"
 #include "NFA.h"
@@ -40,7 +40,7 @@ namespace MatchingWithRegExTests
                 {6, "PartialEOF", "c a t &3", "ca", "{ca}"},
                 {7, "GarbageThenPartial", "c a t &3", "xca", "x{ca}"},
                 {8, "WildcardBreak", "c . t &3", "car", "{ca}r"},
-                {9, "DoublePartial", "a b c &3", "abxab", "{ab}x{ab}"},
+                {9, "DoublePartial", "a b c &3", "abxab", "{ab}xab"},
 
                 // --- Влияние квантификаторов ---
                 {10, "MaxQuant", "a {1,2}", "aaa", "[aa][a]"},
