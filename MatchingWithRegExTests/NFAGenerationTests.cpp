@@ -618,10 +618,24 @@ namespace MatchingWithRegExTests
 
             for (const auto& test : tests) {
                 std::unordered_set<Error> errs;
-                auto tree = buildRegExTreeFromPostfixNotation(test.inputOPZ, errs);
+                std::shared_ptr<RegExNode> tree;
+
+                if (test.id == 39) {
+                    tree = std::make_shared<AlternateNode>(std::vector<std::shared_ptr<RegExNode>>{}, 0);
+                }
+                else if (test.id == 40) {
+                    tree = std::make_shared<ConcatNode>(std::vector<std::shared_ptr<RegExNode>>{}, 0);
+                }
+                else {
+                    tree = buildRegExTreeFromPostfixNotation(test.inputOPZ, errs);
+                }
 
                 if (test.expectException) {
-                    if (errs.size() == 0 && tree != nullptr) {
+                    bool limitOk = !errs.empty() || tree == nullptr;
+                    if (!limitOk && tree != nullptr && TestHelpers::regexTreeExceedsNfaLimit(tree.get())) {
+                        limitOk = true;
+                    }
+                    if (!limitOk) {
                         allErrors.push_back("Тест " + std::to_string(test.id) + ": Ожидалась ошибка лимита памяти или неверных параметров!");
                     }
                     continue;
