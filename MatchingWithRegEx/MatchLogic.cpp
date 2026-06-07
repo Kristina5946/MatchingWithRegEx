@@ -295,8 +295,12 @@ void simulateNFA(const std::string& str, size_t startPos,
             potentialPartial.isValid = true;
             potentialPartial.isFullMatch = false;
 
-            if (isBetterPartialMatch(bestPartialMatch, potentialPartial)) {
-                bestPartialMatch = potentialPartial;
+            bool zeroLengthPartialOk = (pos >= str.length())
+                || (potentialPartial.end == potentialPartial.start && startPos > 0);
+            if (potentialPartial.end > potentialPartial.start || zeroLengthPartialOk) {
+                if (isBetterPartialMatch(bestPartialMatch, potentialPartial)) {
+                    bestPartialMatch = potentialPartial;
+                }
             }
         }
 
@@ -336,8 +340,12 @@ void simulateNFA(const std::string& str, size_t startPos,
         potentialPartial.isValid = true;
         potentialPartial.isFullMatch = false;
 
-        if (isBetterPartialMatch(bestPartialMatch, potentialPartial)) {
-            bestPartialMatch = potentialPartial;
+        bool zeroLengthPartialOk = (pos >= str.length())
+            || (potentialPartial.end == potentialPartial.start && startPos > 0);
+        if (potentialPartial.end > potentialPartial.start || zeroLengthPartialOk) {
+            if (isBetterPartialMatch(bestPartialMatch, potentialPartial)) {
+                bestPartialMatch = potentialPartial;
+            }
         }
     }
 }
