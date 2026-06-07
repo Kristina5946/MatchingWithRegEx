@@ -585,6 +585,13 @@ void QuantifierNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<N
         minIndex++;
     }
 
+    // Точный интервал {n}: последнее обязательное звено должно вести в end
+    if (maxOccur != -1 && maxOccur == minOccur && minOccur > 0) {
+        std::shared_ptr<EpsTrans> finishEps = std::make_shared<EpsTrans>(end, chainEnd);
+        chainEnd->outgoingTransitions.push_back(finishEps);
+        end->incomingTransitions.push_back(finishEps);
+    }
+
     // 3: Неограниченное число повторений (maxOccur == -1)
     if (maxOccur == -1) {
         // 3.1: Определить тело цикла (innerStart, innerEnd)
@@ -610,6 +617,13 @@ void QuantifierNode::buildNFA(std::shared_ptr<NFAState> start, std::shared_ptr<N
         std::shared_ptr<EpsTrans> exitEps = std::make_shared<EpsTrans>(end, innerEnd);
         innerEnd->outgoingTransitions.push_back(exitEps);
         end->incomingTransitions.push_back(exitEps);
+    }
+
+    // После обязательной части можно остановиться (диапазон {min,max})
+    if (maxOccur != -1 && maxOccur > minOccur && minOccur > 0) {
+        std::shared_ptr<EpsTrans> minExitEps = std::make_shared<EpsTrans>(end, chainEnd);
+        chainEnd->outgoingTransitions.push_back(minExitEps);
+        end->incomingTransitions.push_back(minExitEps);
     }
 
     // 4: Ограниченный диапазон — необязательные копии (maxOccur > minOccur)
