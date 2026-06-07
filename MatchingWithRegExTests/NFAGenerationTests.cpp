@@ -22,8 +22,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace MatchingWithRegExTests
 {
     /*!
-     * \brief Эталонные НКА для табл. 2.1.
-     * возвращают готовый объект NFA.
+     * \brief Фабрики эталонных НКА для таблицы 2.1.
      */
     namespace NFAExpected {
 
@@ -558,10 +557,14 @@ namespace MatchingWithRegExTests
         std::vector<int> expectedStateIndices;
     };
 
+    /*!
+     * \brief Модульные тесты построения НКА и epsilon-замыкания (таблицы 2.1–2.2).
+     */
     TEST_CLASS(NFAGenerationTests)
     {
     public:
 
+        /*! \brief Таблица 2.1: построение НКА по AST. */
         TEST_METHOD(Test_BuildNFA_Logic)
         {
             const NFA emptyFail = NFAExpected::InvalidPlaceholder();
@@ -674,6 +677,7 @@ namespace MatchingWithRegExTests
             }
         }
 
+        /*! \brief Таблица 2.2: топология графа и epsilonClosure. */
         TEST_METHOD(Test_EpsilonClosure_GraphTopology)
         {
             std::vector<std::pair<char, char>> dummyChar;

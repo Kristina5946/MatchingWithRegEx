@@ -19,6 +19,11 @@
 
 namespace TestHelpers {
 
+    /*!
+     * \brief Преобразует UTF-8 строку в std::wstring для вывода в Assert.
+     * \param str Исходная строка.
+     * \return Строка в формате wide.
+     */
     inline std::wstring ToWStr(const std::string& str) {
         if (str.empty()) {
             return L"";
@@ -32,6 +37,11 @@ namespace TestHelpers {
         return result;
     }
 
+    /*!
+     * \brief Склеивает список сообщений об ошибках в одну строку для Assert::Fail.
+     * \param errors Список текстов ошибок.
+     * \return Объединённое сообщение с переводами строк.
+     */
     inline std::wstring formatErrors(const std::vector<std::string>& errors) {
         std::wstring msg;
         size_t i = 0;
@@ -43,10 +53,19 @@ namespace TestHelpers {
         return msg;
     }
 
+    /*!
+     * \brief Добавляет новые ошибки в общий список теста.
+     * \param allErrors Накопленный список ошибок.
+     * \param newErrors Ошибки текущего шага.
+     */
     void appendErrors(std::vector<std::string>& allErrors, const std::vector<std::string>& newErrors);
 
     /*!
      * \brief Рекурсивное сравнение ожидаемого и фактического AST по типам и узлам.
+     * \param expected Эталонное дерево.
+     * \param actual Фактическое дерево.
+     * \param errors Список для записи найденных расхождений.
+     * \param path Путь в дереве (для сообщения об ошибке).
      */
     void compareExpressionTrees(const RegExNode* expected, const RegExNode* actual, std::vector<std::string>& errors, std::string path = "root");
 
@@ -89,8 +108,18 @@ namespace TestHelpers {
         const Match& expectedFull, const Match& expectedPartial,
         const Match& result, std::vector<std::string>& errors);
 
+    /*!
+     * \brief Считает число состояний НКА, достижимых из начального.
+     * \param startState Начальное состояние автомата.
+     * \return Количество достижимых состояний.
+     */
     size_t countReachableNFAStates(const std::shared_ptr<NFAState>& startState);
 
+    /*!
+     * \brief Проверяет, превысит ли дерево лимит 10 000 состояний при построении НКА.
+     * \param node Корень синтаксического дерева.
+     * \return true, если лимит будет превышен.
+     */
     bool regexTreeExceedsNfaLimit(const RegExNode* node);
 
 } // namespace TestHelpers

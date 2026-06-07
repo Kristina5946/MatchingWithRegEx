@@ -19,22 +19,26 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MatchingWithRegExTests
 {
-    // 1. Перечисление типов совпадений 
+    /*!
+     * \brief Тип ожидаемого совпадения в тестах табл. 3.4.
+     */
     enum MatchType {
-        NO_MATCH,
-        PARTIAL,
-        FULL
+        NO_MATCH, /*!< Совпадения нет */
+        PARTIAL,  /*!< Частичное совпадение */
+        FULL      /*!< Полное совпадение */
     };
 
-    // 3. Структура для тестов логики (решает проблему с инициализацией test в таблице 3.4)
+    /*!
+     * \brief Данные одного теста логики поиска (таблица 3.4).
+     */
     struct MatchLogicTestCase {
-        int id;
-        std::string testName;
-        std::string regexOPZ;
-        std::string inputString;
-        size_t startPos;
-        MatchType expectedMatchType;
-        size_t expectedMatchLength;
+        int id;                         /*!< Номер теста */
+        std::string testName;           /*!< Краткое имя */
+        std::string regexOPZ;           /*!< Шаблон в ОПЗ */
+        std::string inputString;        /*!< Входная строка */
+        size_t startPos;                /*!< Позиция начала поиска */
+        MatchType expectedMatchType;    /*!< Ожидаемый тип совпадения */
+        size_t expectedMatchLength;     /*!< Ожидаемая длина совпадения */
     };
 
     Match makeMatch(bool isValid, bool isFull, size_t dist, size_t len, size_t pos) {
@@ -86,10 +90,13 @@ namespace MatchingWithRegExTests
             break;
         }
     }
+    /*!
+     * \brief Модульные тесты логики поиска совпадений (таблицы 3.1–3.4).
+     */
     TEST_CLASS(MatchLogicTests)
     {
     public:
-        // ТАБЛИЦА 3.1: Расчет дистанции до терминала 
+        /*! \brief Таблица 3.1: расчёт distanceToTerminal. */
         TEST_METHOD(Test_CalculateDistanceToTerminal_AllCases)
         {
             struct DistTest {
@@ -186,7 +193,7 @@ namespace MatchingWithRegExTests
             }
         }
 
-        // ТАБЛИЦА 3.2: Тестирование шага симуляции автомата SimulateNFA
+        /*! \brief Таблица 3.2: пошаговая симуляция SimulateNFA. */
         TEST_METHOD(Test_SimulateNFA_StepByStep)
         {
             struct SimTest {
@@ -251,7 +258,7 @@ namespace MatchingWithRegExTests
             }
         }
 
-        // ТАБЛИЦА 3.3: Тестирование функции determineFinalMatch
+        /*! \brief Таблица 3.3: приоритеты determineFinalMatch. */
         TEST_METHOD(Test_DetermineFinalMatch_Priorities)
         {
             struct DetTest {
@@ -295,7 +302,7 @@ namespace MatchingWithRegExTests
             }
         }
 
-        // ТАБЛИЦА 3.4: Комплексное тестирование ядра findMatchAtPosition
+        /*! \brief Таблица 3.4: комплексные тесты findMatchAtPosition. */
         TEST_METHOD(Test_FindMatchAtPosition_Comprehensive)
         {
             std::vector<MatchLogicTestCase> tests = {

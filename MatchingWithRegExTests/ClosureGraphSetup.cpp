@@ -1,3 +1,8 @@
+﻿/*!
+ * \file ClosureGraphSetup.cpp
+ * \brief Реализация тестовых графов для epsilon-замыкания.
+ */
+
 #include "pch.h"
 #include "ClosureGraphSetup.h"
 

@@ -1,4 +1,9 @@
-﻿#include "pch.h"
+﻿/*!
+ * \file IntegrationTests.cpp
+ * \brief Интеграционные тесты поиска совпадений (функция extractAllMatches).
+ */
+
+#include "pch.h"
 #include "CppUnitTest.h"
 #include "RegExTree.h"
 #include "NFA.h"
@@ -12,17 +17,24 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MatchingWithRegExTests
 {
+    /*!
+     * \brief Интеграционные тесты extractAllMatches по таблице поиска в строке.
+     */
     TEST_CLASS(NFAIntegrationTests)
     {
     public:
+        /*!
+         * \brief Данные одного интеграционного теста.
+         */
         struct IntegrationTestCase {
-            int id;
-            std::string testName;
-            std::string regexOPZ;
-            std::string input;
-            std::string expectedResult; 
+            int id;                     /*!< Номер теста */
+            std::string testName;       /*!< Краткое имя */
+            std::string regexOPZ;       /*!< Шаблон в ОПЗ */
+            std::string input;          /*!< Входная строка */
+            std::string expectedResult; /*!< Ожидаемая разметка результата */
         };
 
+        /*! \brief Полный набор интеграционных случаев поиска совпадений. */
         TEST_METHOD(Test_ExtractAllMatches_FullSuite)
         {
             // [текст] - полное совпадение

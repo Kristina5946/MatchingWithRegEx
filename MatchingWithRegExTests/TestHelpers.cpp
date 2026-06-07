@@ -1,9 +1,9 @@
-﻿#include "pch.h"
-/*!
+﻿/*!
  * \file TestHelpers.cpp
  * \brief Реализация алгоритмов структурного сравнения деревьев (AST) и проверки эквивалентности автоматов (НКА).
  */
 
+#include "pch.h"
 #include "TestHelpers.h"
 #include <sstream>
 #include <stack>
@@ -19,7 +19,7 @@
 namespace TestHelpers {
 
     /*!
-     * \brief Класс-адаптер для безопасного доступа к защищенному полю charRanges внутри CharTrans.
+     * \brief Класс для безопасного доступа к защищенному полю charRanges внутри CharTrans.
      * Позволяет извлекать информацию о символах для точного сравнения переходов автоматов.
      */
     class CharTransAccessor : public CharTrans {

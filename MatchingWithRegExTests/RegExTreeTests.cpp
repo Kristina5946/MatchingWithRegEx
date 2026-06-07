@@ -18,6 +18,9 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace MatchingWithRegExTests
 {
 
+    /*!
+     * \brief Фабрики эталонных узлов AST для таблицы 1.
+     */
     namespace TreeExpected {
 
         std::shared_ptr<RegExNode> Char1(char c) {
@@ -84,20 +87,25 @@ namespace MatchingWithRegExTests
     }
 
     /*!
-     * \brief Локальная структура для хранения данных тестового случая AST.
-     * expectedTree — эталонное дерево в памяти , nullptr если ожидается ошибка.
+     * \brief Данные одного теста построения AST (таблица 1).
      */
     struct TreeTest {
-        int id;
-        std::string testName;
-        std::string inputOPZ;
-        std::shared_ptr<RegExNode> expectedTree;
-        std::vector<Error> expectedErrors;
+        int id;                                      /*!< Номер теста */
+        std::string testName;                        /*!< Краткое имя */
+        std::string inputOPZ;                        /*!< Входная строка ОПЗ */
+        std::shared_ptr<RegExNode> expectedTree;     /*!< Эталонное дерево; nullptr при ошибке */
+        std::vector<Error> expectedErrors;          /*!< Ожидаемые ошибки разбора */
     };
 
+    /*!
+     * \brief Модульные тесты построения AST из ОПЗ (таблица 1).
+     */
     TEST_CLASS(RegExTreeTests)
     {
     public:
+        /*!
+         * \brief Прогон всех случаев таблицы 1: дерево или множество ошибок.
+         */
         TEST_METHOD(Test_BuildRegExTreeFromPostfixNotation_AllCases)
         {
             // --- Массив тестов (Таблица 1): вход ОПЗ и эталонное дерево в одной строке ---
