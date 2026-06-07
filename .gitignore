@@ -1,4 +1,4 @@
-# --- Visual Studio / MSBuild ---
+﻿# --- Visual Studio / MSBuild ---
 .vs/
 *.user
 *.userosscache
@@ -76,3 +76,4 @@ $RECYCLE.BIN/
 
 # --- Сгенерированные отчёты (по желанию раскомментировать) ---
 # *.html
+ManualTests/
