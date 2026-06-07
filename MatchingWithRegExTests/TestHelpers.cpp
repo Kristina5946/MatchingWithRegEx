@@ -371,6 +371,64 @@ namespace TestHelpers {
         }
     }
 
+    size_t countReachableNFAStates(const std::shared_ptr<NFAState>& startState) {
+        std::unordered_set<NFAState*> visited;
+        std::vector<std::shared_ptr<NFAState>> stack;
+        stack.push_back(startState);
+        visited.insert(startState.get());
+
+        size_t stackIndex = 0;
+        while (stackIndex < stack.size()) {
+            std::shared_ptr<NFAState> current = stack[stackIndex];
+            stackIndex++;
+
+            size_t transIndex = 0;
+            while (transIndex < current->outgoingTransitions.size()) {
+                std::shared_ptr<NFAState> target = current->outgoingTransitions[transIndex]->getTarget();
+                if (target && visited.find(target.get()) == visited.end()) {
+                    visited.insert(target.get());
+                    stack.push_back(target);
+                }
+                transIndex++;
+            }
+        }
+        return visited.size();
+    }
+
+    bool regexTreeExceedsNfaLimit(const RegExNode* node) {
+        if (node == nullptr) {
+            return false;
+        }
+        if (const QuantifierNode* quant = dynamic_cast<const QuantifierNode*>(node)) {
+            if (quant->minOccur > 10000) {
+                return true;
+            }
+            if (quant->maxOccur != -1 && quant->maxOccur >= 10000) {
+                return true;
+            }
+            return regexTreeExceedsNfaLimit(quant->child.get());
+        }
+        if (const ConcatNode* concat = dynamic_cast<const ConcatNode*>(node)) {
+            size_t i = 0;
+            while (i < concat->children.size()) {
+                if (regexTreeExceedsNfaLimit(concat->children[i].get())) {
+                    return true;
+                }
+                i++;
+            }
+        }
+        if (const AlternateNode* alt = dynamic_cast<const AlternateNode*>(node)) {
+            size_t i = 0;
+            while (i < alt->children.size()) {
+                if (regexTreeExceedsNfaLimit(alt->children[i].get())) {
+                    return true;
+                }
+                i++;
+            }
+        }
+        return false;
+    }
+
     void validateMatchResult(int testId, const std::string& inputString, size_t queryStartPos,
         bool expectValid, bool expectFullMatch, size_t expectedLength,
         const Match& actualMatch, std::vector<std::string>& errors)
