@@ -48,7 +48,7 @@ void calculateDistanceToTerminal(std::shared_ptr<NFAState> endState)
         }
     }
 
-    // 4: Релаксация до стабилизации (нужно для циклов вроде a*)
+    // 4: Релаксация до стабилизации для цикклов
     bool improved = true;
     while (improved) {
         improved = false;
@@ -336,7 +336,7 @@ void simulateNFA(const std::string& str, size_t startPos,
         }
     }
 
-    // 1.1 (финальный фронт): оценить частичное совпадение после последнего шага
+    // 1.1 : оценить частичное совпадение после последнего шага
     for (const ActiveState& active : currentStates) {
         Match potentialPartial;
         potentialPartial.start = active.currentMatch.start;

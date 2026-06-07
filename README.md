@@ -1,6 +1,6 @@
-# MatchingWithRegEx
+﻿# MatchingWithRegEx
 
-Данный файл содержит необходимую информацию о подкаталогах проекта и о программе **MatchingWithRegEx**.
+Краткое описание проекта **MatchingWithRegEx** и того, как его собрать и запустить.
 
 ---
 
@@ -8,7 +8,7 @@
 
 ### Корень репозитория
 
-- `MatchingWithRegEx.sln` — решение Microsoft Visual Studio (основная программа и модульные тесты).
+- `MatchingWithRegEx.sln` — решение Visual Studio: библиотека, программа и тесты.
 - `README.md` — описание проекта (этот файл).
 - `.gitignore` — исключение артефактов сборки и служебных файлов IDE из системы контроля версий.
 
@@ -21,25 +21,27 @@
 - программа и методика испытаний (таблицы тестов).
 
 
-### Подкаталог `MatchingWithRegEx/` (исходный код программы)
+### Подкаталог `MatchingWithRegEx/` (библиотека с кодом программы)
 
-Проект на **C++** (стандартная библиотека). Основные модули:
+Статическая библиотека на **C++**. Основные модули:
 
 | Файлы | Назначение |
 |--------|------------|
-| `main.cpp` | Точка входа, разбор аргументов командной строки, вызов цепочки обработки |
-| `RegExTree.cpp`, `RegExTree.h` | Построение синтаксического дерева из ОПЗ, генерация фрагментов НКА |
-| `NFA.cpp`, `NFA.h` | Структуры состояний и переходов НКА |
-| `MatchLogic.cpp`, `MatchLogic.h` | Поиск совпадений, ε-замыкание, приоритет полного/частичного совпадения |
-| `HtmlReport.cpp`, `HtmlReport.h` | Формирование HTML-отчёта |
+| `main.cpp` | Точка входа (подключается в проект приложения) |
+| `RegExTree.cpp`, `RegExTree.h` | Разбор ОПЗ, построение AST, генерация фрагментов НКА |
+| `NFA.cpp`, `NFA.h` | Состояния и переходы НКА |
+| `MatchLogic.cpp`, `MatchLogic.h` | Поиск совпадений, ε-замыкание |
+| `HtmlReport.cpp`, `HtmlReport.h` | HTML-отчёт |
 | `Error.cpp`, `Error.h` | Коды и сообщения об ошибках |
-| `Token.cpp`, `Token.h` | Разбор токенов ОПЗ |
 
-### Подкаталог `MatchingWithRegEx/x64/Debug/` 
+### Подкаталог `MatchingWithRegExApp/` (запускаемая программа)
 
-После сборки в Visual Studio:
+Проект-приложение: собирает `main.cpp` и подключает библиотеку `MatchingWithRegEx`.
 
-- `MatchingWithRegEx.exe` — исполняемый файл программы 
+### Папка `x64/Debug/` (после сборки)
+
+- `MatchingWithRegExApp.exe` — файл, который нужно запускать из командной строки
+- `MatchingWithRegExTests.dll` — модульные тесты
 
 ### Подкаталог `MatchingWithRegExTests/` (модульные тесты)
 
@@ -75,13 +77,13 @@
 **Пример команды запуска (Windows):**
 
 ```text
-MatchingWithRegEx.exe regex.txt string.txt result.html
+MatchingWithRegExApp.exe regex.txt string.txt result.html
 ```
 
-или с относительными путями:
+или из корня репозитория после сборки:
 
 ```text
-.\MatchingWithRegEx\x64\Debug\MatchingWithRegEx.exe .\regex.txt .\string.txt .\result.html
+.\x64\Debug\MatchingWithRegExApp.exe .\regex.txt .\string.txt .\result.html
 ```
 
 ### Входные данные
@@ -101,7 +103,7 @@ MatchingWithRegEx.exe regex.txt string.txt result.html
   - **лучшее частичное** совпадение — жёлтый фон (`<span>`);
   - несовпавшие фрагменты — красный текст.
 
-Логика отбора совпадений реализуется функцией `extractAllMatches`; оформление — `generateHtmlReport` (см. `MatchLogic.h`, `HtmlReport`).
+Поиск совпадений — `extractAllMatches` (`MatchLogic.h`), отчёт — `generateHtmlReport` (`HtmlReport.h`).
 
 ### Пример работы (ОПЗ и строка)
 
@@ -145,11 +147,12 @@ onetwothree
 ### Сборка и тесты
 
 1. Открыть `MatchingWithRegEx.sln` в **Visual Studio 2019/2022**.
-2. Собрать конфигурацию **Debug** , платформа **x64**.
-3. Запустить **MatchingWithRegExTests** через **Обозреватель тестов**.
+2. Собрать решение: **Debug**, платформа **x64** (нужны проекты **MatchingWithRegExApp** и **MatchingWithRegExTests**).
+3. Программу запускать: `x64\Debug\MatchingWithRegExApp.exe`.
+4. Тесты: **Тест** → **Обозреватель тестов** → запуск **MatchingWithRegExTests**.
 
 ---
 
 **Автор:** Филиппова К.Е.  
-**Дата:** 22 июня 2026  
+**Дата:** 8 июня 2026  
 **Версия:** 1.0
