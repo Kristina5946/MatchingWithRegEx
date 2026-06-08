@@ -56,9 +56,6 @@
     <ClCompile Include="Error.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="Token.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="NFA.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>

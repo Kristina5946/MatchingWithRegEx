@@ -53,25 +53,23 @@ void calculateDistanceToTerminal(std::shared_ptr<NFAState> endState)
     while (improved) {
         improved = false;
         for (NFAState* u : states) {
-            if (u->distanceToTerminal == static_cast<size_t>(-1)) {
-                continue;
-            }
-
-            size_t inIndex = 0;
-            while (inIndex < u->incomingTransitions.size()) {
-                std::shared_ptr<Trans> trans = u->incomingTransitions[inIndex].lock();
-                if (trans) {
-                    std::shared_ptr<NFAState> v = trans->getSource();
-                    if (v) {
-                        size_t stepWeight = trans->isEpsilon() ? 0 : 1;
-                        size_t newDistance = u->distanceToTerminal + stepWeight;
-                        if (newDistance < v->distanceToTerminal) {
-                            v->distanceToTerminal = newDistance;
-                            improved = true;
+            if (u->distanceToTerminal != static_cast<size_t>(-1)) {
+                size_t inIndex = 0;
+                while (inIndex < u->incomingTransitions.size()) {
+                    std::shared_ptr<Trans> trans = u->incomingTransitions[inIndex].lock();
+                    if (trans) {
+                        std::shared_ptr<NFAState> v = trans->getSource();
+                        if (v) {
+                            size_t stepWeight = trans->isEpsilon() ? 0 : 1;
+                            size_t newDistance = u->distanceToTerminal + stepWeight;
+                            if (newDistance < v->distanceToTerminal) {
+                                v->distanceToTerminal = newDistance;
+                                improved = true;
+                            }
                         }
                     }
+                    inIndex++;
                 }
-                inIndex++;
             }
         }
     }
