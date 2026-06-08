@@ -158,7 +158,9 @@ int main(int argc, char* argv[])
     std::vector<Match> matches = extractAllMatches(nfa, inputString);
 
     // 9: Сформировать итоговый HTML-файл
-    generateHtmlReport(outputFilePath, inputString, regexTemplate, matches, errors);
+    if (!generateHtmlReport(outputFilePath, inputString, regexTemplate, matches, errors)) {
+        return 1;
+    }
 
     return 0;
 }

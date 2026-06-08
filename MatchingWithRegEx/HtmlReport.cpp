@@ -101,7 +101,7 @@ namespace {
     }
 }
 
-void generateHtmlReport(const std::string& filepath,
+bool generateHtmlReport(const std::string& filepath,
     const std::string& originalStr,
     const std::string& regexTemplate,
     const std::vector<Match>& matches,
@@ -109,6 +109,10 @@ void generateHtmlReport(const std::string& filepath,
 {
     // 1: Открыть или создать выходной файл отчёта
     std::ofstream out(filepath.c_str());
+    if (!out.is_open()) {
+        Error(Error::outputFileCannotBeCreated, 0).message();
+        return false;
+    }
 
     // 2: Записать базовую структуру HTML-документа
     out << "<!DOCTYPE html>\n";
@@ -168,4 +172,11 @@ void generateHtmlReport(const std::string& filepath,
         // 5: Закрыть теги HTML-документа
         out << "</body></html>\n";
     }
+
+    out.flush();
+    if (!out.good()) {
+        Error(Error::outputFileCannotBeCreated, 0).message();
+        return false;
+    }
+    return true;
 }

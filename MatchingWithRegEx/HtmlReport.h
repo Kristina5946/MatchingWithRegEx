@@ -25,8 +25,9 @@
  * \param regexTemplate Исходная строка регулярного выражения (шаблон ОПЗ).
  * \param matches Список отфильтрованных совпадений.
  * \param errors Множество выявленных синтаксических ошибок.
+ * \return true, если отчёт успешно записан; false при ошибке создания или записи файла.
  */
-void generateHtmlReport(const std::string& filepath,
+bool generateHtmlReport(const std::string& filepath,
     const std::string& originalStr,
     const std::string& regexTemplate,
     const std::vector<Match>& matches,
