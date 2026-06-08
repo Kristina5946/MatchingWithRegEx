@@ -146,13 +146,10 @@
     <ClInclude Include="NFA.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegExTree.h" />
-    <ClInclude Include="Token.h" />
-    <ClInclude Include="UsefulFunction.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="HtmlReport.cpp" />
-    <ClCompile Include="MatchingWithRegEx.cpp" />
     <ClCompile Include="MatchLogic.cpp" />
     <ClCompile Include="NFA.cpp" />
     <ClCompile Include="pch.cpp">

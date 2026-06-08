@@ -1096,8 +1096,6 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = MatchingWithRegEx/pch.cpp \
-                         MatchingWithRegEx/MatchingWithRegEx.cpp \
-                         MatchingWithRegEx/Token.cpp \
                          MatchingWithRegEx/framework.h
 
 
