@@ -38,9 +38,20 @@
 
 Проект-приложение: собирает `main.cpp` и подключает библиотеку `MatchingWithRegEx`.
 
-### Папка `x64/Debug/` (после сборки)
+### Папки `x64/Release/` и `x64/Debug/` (после сборки)
 
-- `MatchingWithRegExApp.exe` — файл, который нужно запускать из командной строки
+| Папка | Назначение |
+|-------|------------|
+| `x64/Release/` | **Готовая программа для запуска и переноса на другой компьютер** |
+| `x64/Debug/` | Сборка для разработки в Visual Studio (на чужом ПК без VS обычно не запускается) |
+
+В `x64/Release/` после сборки **Release | x64**:
+
+- `MatchingWithRegExApp.exe` — запускаемый файл программы
+- `msvcp140.dll`, `vcruntime140.dll`, `vcruntime140_1.dll` (и при необходимости `concrt140.dll`) — библиотеки среды выполнения; должны лежать **в той же папке**, что и `.exe`
+
+В `x64/Debug/` дополнительно:
+
 - `MatchingWithRegExTests.dll` — модульные тесты
 
 ### Подкаталог `MatchingWithRegExTests/` (модульные тесты)
@@ -74,17 +85,32 @@
 
 При неверном числе аргументов или ошибках чтения файлов программа должна вывести понятное сообщение и завершить работу с ненулевым кодом возврата.
 
-**Пример команды запуска (Windows):**
+**Пример команды запуска (Windows, x64):**
+
+Перейти в папку с программой и выполнить:
 
 ```text
+cd x64\Release
 MatchingWithRegExApp.exe regex.txt string.txt result.html
 ```
 
-или из корня репозитория после сборки:
+Из корня репозитория:
 
 ```text
-.\x64\Debug\MatchingWithRegExApp.exe .\regex.txt .\string.txt .\result.html
+.\x64\Release\MatchingWithRegExApp.exe .\regex.txt .\string.txt .\result.html
 ```
+
+Файлы `regex.txt` и `string.txt` должны существовать (можно положить их в `x64\Release\` рядом с `.exe`).
+
+### Запуск на другом компьютере (без Visual Studio)
+
+1. Собрать решение: конфигурация **Release**, платформа **x64**.
+2. Скопировать из `VC\Redist\MSVC\<версия>\x64\Microsoft.VC143.CRT\` в `x64\Release\` файлы:
+   `msvcp140.dll`, `vcruntime140.dll`, `vcruntime140_1.dll` (при ошибке запуска добавить `concrt140.dll`).
+3. Перенести на другой ПК **всю папку** `x64\Release\` (или архив с ней): `.exe`, `.dll`, входные `.txt`.
+4. На целевом ПК: **Windows 10/11, 64-bit**. Visual Studio не требуется.
+
+Сборку **Debug** на другой компьютер без установленной Visual Studio переносить не следует.
 
 ### Входные данные
 
@@ -147,12 +173,19 @@ onetwothree
 ### Сборка и тесты
 
 1. Открыть `MatchingWithRegEx.sln` в **Visual Studio 2019/2022**.
-2. Собрать решение: **Debug**, платформа **x64** (нужны проекты **MatchingWithRegExApp** и **MatchingWithRegExTests**).
-3. Программу запускать: `x64\Debug\MatchingWithRegExApp.exe`.
-4. Тесты: **Тест** → **Обозреватель тестов** → запуск **MatchingWithRegExTests**.
+2. Для **разработки и тестов**: **Debug**, платформа **x64** — проекты **MatchingWithRegExApp** и **MatchingWithRegExTests**.
+3. Для **запуска и сдачи на другом ПК**: **Release**, платформа **x64** — проект **MatchingWithRegExApp**, папка `x64\Release\`.
+4. Тесты в Visual Studio: **Тест** → **Обозреватель тестов** → **MatchingWithRegExTests**.
+
+Запуск тестов из командной строки (нужна установленная Visual Studio):
+
+```text
+cd x64\Debug
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe" MatchingWithRegExTests.dll
+```
 
 ---
 
 **Автор:** Филиппова К.Е.  
-**Дата:** 8 июня 2026  
+**Дата:** 11 июня 2026  
 **Версия:** 1.0

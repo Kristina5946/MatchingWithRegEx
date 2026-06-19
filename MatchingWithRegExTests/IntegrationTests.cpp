@@ -55,9 +55,9 @@ namespace MatchingWithRegExTests
                 {9, "DoublePartial", "a b c &3", "abxab", "{ab}xab"},
 
                 // --- Влияние квантификаторов ---
-                {10, "MaxQuant", "a {1,2}", "aaa", "[aa][a]"},
-                {11, "StarGreedyScan", "a *", "baaab", "b[aaa]b"},
-                {12, "CatchAllMatch", ". *", "xyz", "[xyz]"},
+                {10, "MaxQuant", "a {1,2}", "aaa", "[aa]a||a[aa]||aa[a]"},
+                {11, "StarGreedyScan", "a *", "baaab", "b[aaa]b||ba[aa]b||baa[a]b"},
+                {12, "CatchAllMatch", ". *", "xyz", "[xyz]||x[yz]||xy[z]"},
                 {13, "MultiBranchScan", "a b & c d & |", "xabxcdx", "x[ab]x[cd]x"},
 
                 // --- Защита от зацикливаний ---
@@ -73,8 +73,9 @@ namespace MatchingWithRegExTests
                 {19, "IgnorePartialIfFull", "c a t &3", "ca then cat", "ca then [cat]"},
                 {20, "BestGlobalPartial", "c a t &3", "c and ca", "c and {ca}"},
 
-                // --- Смежные совпадения ---
-                {21, "ConsecutiveMatch", "a b &", "ababab", "[ab][ab][ab]"}
+                // --- Смежные и пересекающиеся совпадения ---
+                {21, "ConsecutiveMatch", "a b &", "ababab", "[ab][ab][ab]"},
+                {22, "OverlapSamePattern", "c a t b c a t &7", "catbcatbcat", "[catbcat]bcat||catb[catbcat]"}
             };
 
             std::vector<std::string> allErrors;
@@ -106,31 +107,69 @@ namespace MatchingWithRegExTests
                 // 2. Выполнение поиска
                 std::vector<Match> matches = extractAllMatches(nfa, test.input);
 
-                // 3. Формирование простой строки результата 
+                // 3. Формирование простой строки результата
                 std::string actualResult = "";
-                size_t currentPos = 0;
-
-                for (const auto& match : matches) {
-                    // Добавляем обычный текст (мусор), который был до совпадения
-                    if (match.start > currentPos) {
-                        actualResult += test.input.substr(currentPos, match.start - currentPos);
+                bool overlap = false;
+                size_t overlapIndex = 1;
+                while (!overlap && overlapIndex < matches.size()) {
+                    if (matches[overlapIndex].start < matches[overlapIndex - 1].end) {
+                        overlap = true;
                     }
-
-                    // Добавляем само совпадение, обернутое в скобки
-                    std::string matchText = test.input.substr(match.start, match.end - match.start);
-                    if (match.isFullMatch) {
-                        actualResult += "[" + matchText + "]"; // Полное
-                    }
-                    else {
-                        actualResult += "{" + matchText + "}"; // Частичное
-                    }
-
-                    currentPos = match.end;
+                    overlapIndex++;
                 }
 
-                // Добавляем хвост строки, если после последнего совпадения остался текст
-                if (currentPos < test.input.length()) {
-                    actualResult += test.input.substr(currentPos);
+                if (overlap) {
+                    size_t matchIndex = 0;
+                    while (matchIndex < matches.size()) {
+                        const auto& match = matches[matchIndex];
+                        if (matchIndex > 0) {
+                            actualResult += "||";
+                        }
+
+                        if (match.start > 0) {
+                            actualResult += test.input.substr(0, match.start);
+                        }
+
+                        std::string matchText = test.input.substr(match.start, match.end - match.start);
+                        if (match.isFullMatch) {
+                            actualResult += "[" + matchText + "]";
+                        }
+                        else {
+                            actualResult += "{" + matchText + "}";
+                        }
+
+                        if (match.end < test.input.length()) {
+                            actualResult += test.input.substr(match.end);
+                        }
+
+                        matchIndex++;
+                    }
+                }
+                else {
+                    size_t currentPos = 0;
+
+                    for (const auto& match : matches) {
+                        // Добавляем обычный текст (мусор), который был до совпадения
+                        if (match.start > currentPos) {
+                            actualResult += test.input.substr(currentPos, match.start - currentPos);
+                        }
+
+                        // Добавляем само совпадение, обернутое в скобки
+                        std::string matchText = test.input.substr(match.start, match.end - match.start);
+                        if (match.isFullMatch) {
+                            actualResult += "[" + matchText + "]"; // Полное
+                        }
+                        else {
+                            actualResult += "{" + matchText + "}"; // Частичное
+                        }
+
+                        currentPos = match.end;
+                    }
+
+                    // Добавляем хвост строки, если после последнего совпадения остался текст
+                    if (currentPos < test.input.length()) {
+                        actualResult += test.input.substr(currentPos);
+                    }
                 }
 
                 // 4. Проверка

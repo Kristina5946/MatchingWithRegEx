@@ -409,8 +409,8 @@ std::vector<Match> extractAllMatches(const NFA& nfa, const std::string& str)
             if (resultMatch.end > resultMatch.start) {
                 // 2.2.1: Добавить в итоговый список
                 finalMatches.push_back(resultMatch);
-                // 2.2.2: Сдвинуть pos за конец совпадения
-                pos = resultMatch.end;
+                // 2.2.2: Следующая стартовая позиция (+1 для пересекающихся совпадений)
+                pos = pos + 1;
             }
             else {
                 // Пустое совпадение — только сдвиг pos (защита от зацикливания)

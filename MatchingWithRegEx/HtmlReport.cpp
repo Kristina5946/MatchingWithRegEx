@@ -10,6 +10,18 @@
 
 namespace {
 
+    bool matchesOverlap(const std::vector<Match>& matches)
+    {
+        size_t index = 1;
+        while (index < matches.size()) {
+            if (matches[index].start < matches[index - 1].end) {
+                return true;
+            }
+            index++;
+        }
+        return false;
+    }
+
     std::string escapeHtml(const std::string& text)
     {
         std::string result;
@@ -134,39 +146,72 @@ bool generateHtmlReport(const std::string& filepath,
         out << "</body></html>\n";
     }
     else {
-        // 4.1: Позиция начала необработанного текста
-        size_t unprocessedPos = 0;
+        bool overlap = matchesOverlap(matches);
 
-        // 4.2: Для каждого совпадения из списка
-        for (const Match& match : matches) {
-            // 4.2.1: Несовпавший текст перед совпадением — красный
-            if (match.start > unprocessedPos) {
-                writeRedText(out, originalStr.substr(unprocessedPos, match.start - unprocessedPos));
+        if (overlap) {
+            // 4: Пересекающиеся совпадения — строка выводится для каждого совпадения отдельно
+            size_t matchIndex = 0;
+            while (matchIndex < matches.size()) {
+                const Match& match = matches[matchIndex];
+                out << "<p>";
+                if (match.start > 0) {
+                    writeRedText(out, originalStr.substr(0, match.start));
+                }
+
+                std::string matchText = originalStr.substr(match.start, match.end - match.start);
+                if (match.isFullMatch) {
+                    out << "<mark style=\"background-color:lightgreen\">";
+                    out << escapeHtml(matchText);
+                    out << "</mark>";
+                }
+                else {
+                    out << "<span class=\"partial-box\" style=\"background-color:yellow\">";
+                    out << escapeHtml(matchText);
+                    out << "</span>";
+                }
+
+                if (match.end < originalStr.length()) {
+                    writeRedText(out, originalStr.substr(match.end));
+                }
+                out << "</p>\n";
+                matchIndex++;
             }
-
-            std::string matchText = originalStr.substr(match.start, match.end - match.start);
-
-            // 4.2.2: Текст совпадения
-            if (match.isFullMatch) {
-                // 4.2.2.1: Полное — зелёный маркер
-                out << "<mark style=\"background-color:lightgreen\">";
-                out << escapeHtml(matchText);
-                out << "</mark>";
-            }
-            else {
-                // 4.2.2.2: Частичное — жёлтый фон
-                out << "<span class=\"partial-box\" style=\"background-color:yellow\">";
-                out << escapeHtml(matchText);
-                out << "</span>";
-            }
-
-            // 4.2.3: Сдвинуть необработанную позицию
-            unprocessedPos = match.end;
         }
+        else {
+            // 4.1: Позиция начала необработанного текста
+            size_t unprocessedPos = 0;
 
-        // 4.3: Хвост строки — красный
-        if (unprocessedPos < originalStr.length()) {
-            writeRedText(out, originalStr.substr(unprocessedPos));
+            // 4.2: Для каждого совпадения из списка
+            for (const Match& match : matches) {
+                // 4.2.1: Несовпавший текст перед совпадением — красный
+                if (match.start > unprocessedPos) {
+                    writeRedText(out, originalStr.substr(unprocessedPos, match.start - unprocessedPos));
+                }
+
+                std::string matchText = originalStr.substr(match.start, match.end - match.start);
+
+                // 4.2.2: Текст совпадения
+                if (match.isFullMatch) {
+                    // 4.2.2.1: Полное — зелёный маркер
+                    out << "<mark style=\"background-color:lightgreen\">";
+                    out << escapeHtml(matchText);
+                    out << "</mark>";
+                }
+                else {
+                    // 4.2.2.2: Частичное — жёлтый фон
+                    out << "<span class=\"partial-box\" style=\"background-color:yellow\">";
+                    out << escapeHtml(matchText);
+                    out << "</span>";
+                }
+
+                // 4.2.3: Сдвинуть необработанную позицию
+                unprocessedPos = match.end;
+            }
+
+            // 4.3: Хвост строки — красный
+            if (unprocessedPos < originalStr.length()) {
+                writeRedText(out, originalStr.substr(unprocessedPos));
+            }
         }
 
         // 5: Закрыть теги HTML-документа
